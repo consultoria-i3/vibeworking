@@ -40,5 +40,12 @@ function createSupabaseClient(): SupabaseClient | null {
   });
 }
 
-// Type assertion so callers don't need null checks; useAuth handles null for config error UI
-export const supabase = createSupabaseClient() as SupabaseClient;
+const _client = createSupabaseClient();
+
+/** Returns the Supabase client or null when config is missing. Use this when you need to handle missing config. */
+export function getSupabaseOrNull(): SupabaseClient | null {
+  return _client;
+}
+
+// Type assertion for backward compatibility; callers should use getSupabaseOrNull() and handle null when config may be absent
+export const supabase = _client as SupabaseClient;

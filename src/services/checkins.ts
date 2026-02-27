@@ -1,8 +1,9 @@
 // =============================================================================
 // Vibe Working — Check-ins Service
 // =============================================================================
-import { supabase } from '../lib/supabase';
+import { supabase, getSupabaseOrNull } from '../lib/supabase';
 import { handleSupabaseError, queueMutation } from '../lib/api-utils';
+import { SORT_ORDER_TO_RELATIONSHIP } from '../data/checkinQuestions';
 import NetInfo from '@react-native-community/netinfo';
 import type {
   DailyCheckin,
@@ -10,6 +11,11 @@ import type {
   CheckinWithAnswers,
   CheckinInput,
 } from '../types/database';
+
+/** DB stores 2–10 (0.5 scale). Normalize to 1–5 for app. */
+function normalizeAnswerValue(a: CheckinAnswer): CheckinAnswer {
+  return { ...a, value: a.value >= 2 && a.value <= 10 ? a.value / 2 : a.value };
+}
 
 // ---------------------------------------------------------------------------
 // Save a daily check-in with answers (transactional)
@@ -73,7 +79,7 @@ export async function saveCheckin(input: CheckinInput): Promise<CheckinWithAnswe
   const answerRows = input.answers.map((a) => ({
     checkin_id: checkin!.id,
     question_id: a.question_id,
-    value: a.value,
+    value: Math.round(a.value * 2), // store 2–10 for 1–5 (0.5 steps)
   }));
 
   const { data: answers, error: ansErr } = await supabase
@@ -83,7 +89,7 @@ export async function saveCheckin(input: CheckinInput): Promise<CheckinWithAnswe
 
   if (ansErr) handleSupabaseError(ansErr);
 
-  return { ...checkin!, answers: answers! };
+  return { ...checkin!, answers: (answers ?? []).map(normalizeAnswerValue) };
 }
 
 // ---------------------------------------------------------------------------
@@ -118,7 +124,7 @@ export async function getCheckinHistory(
   const answersByCheckin = new Map<string, CheckinAnswer[]>();
   for (const a of answers ?? []) {
     const list = answersByCheckin.get(a.checkin_id) ?? [];
-    list.push(a);
+    list.push(normalizeAnswerValue(a));
     answersByCheckin.set(a.checkin_id, list);
   }
 
@@ -205,5 +211,149 @@ export async function getTodayCheckin(): Promise<CheckinWithAnswers | null> {
     .select('*')
     .eq('checkin_id', checkin.id);
 
-  return { ...checkin, answers: answers ?? [] };
+  return { ...checkin, answers: (answers ?? []).map(normalizeAnswerValue) };
+}
+
+// ---------------------------------------------------------------------------
+// Low-score reminders (answers with value <= 3 in app scale; DB stores 2–10)
+// ---------------------------------------------------------------------------
+export interface LowScoreReminder {
+  id: string;
+  checkin_date: string;
+  question_id: string;
+  question: string;
+  emoji: string | null;
+  advice: string;
+  value: number; // 1–5 app scale
+}
+
+const REMINDER_DAYS = 14;
+const DB_VALUE_MAX_FOR_LOW = 6; // app score 3 = DB value 6
+
+export async function getLowScoreReminders(userId?: string): Promise<LowScoreReminder[]> {
+  const supabase = getSupabaseOrNull();
+  if (!supabase) return [];
+  let uid = userId;
+  if (uid == null) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    uid = user.id;
+  }
+
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() - REMINDER_DAYS);
+  const fromStr = fromDate.toISOString().split('T')[0];
+
+  const { data: checkins, error: checkinErr } = await supabase
+    .from('daily_checkins')
+    .select('id, checkin_date')
+    .eq('user_id', uid)
+    .gte('checkin_date', fromStr)
+    .order('checkin_date', { ascending: false });
+
+  if (checkinErr) handleSupabaseError(checkinErr);
+  if (!checkins?.length) return [];
+
+  const checkinIds = checkins.map((c) => c.id);
+  const { data: answers, error: ansErr } = await supabase
+    .from('checkin_answers')
+    .select('id, checkin_id, question_id, value')
+    .in('checkin_id', checkinIds)
+    .lte('value', DB_VALUE_MAX_FOR_LOW);
+
+  if (ansErr) handleSupabaseError(ansErr);
+  if (!answers?.length) return [];
+
+  const questionIds = [...new Set(answers.map((a) => a.question_id))];
+  const [questionsRes, tipsRes] = await Promise.all([
+    supabase.from('checkin_questions').select('id, question, emoji').in('id', questionIds),
+    supabase.from('checkin_question_tips').select('question_id, text').in('question_id', questionIds).eq('max_value', 3),
+  ]);
+
+  const questionsMap = new Map<string | number, { question: string; emoji: string | null }>();
+  (questionsRes.data ?? []).forEach((q: { id: string; question: string; emoji: string | null }) => {
+    questionsMap.set(q.id, { question: q.question, emoji: q.emoji });
+  });
+  const tipsMap = new Map<string | number, string>();
+  (tipsRes.data ?? []).forEach((t: { question_id: string; text: string }) => {
+    tipsMap.set(t.question_id, t.text);
+  });
+
+  const checkinDateMap = new Map<string, string>();
+  checkins.forEach((c: { id: string; checkin_date: string }) => checkinDateMap.set(c.id, c.checkin_date));
+
+  const reminders: LowScoreReminder[] = [];
+  for (const a of answers) {
+    const q = questionsMap.get(a.question_id);
+    const advice = tipsMap.get(a.question_id);
+    const date = checkinDateMap.get(a.checkin_id);
+    if (!q || !advice || !date) continue;
+    reminders.push({
+      id: a.id,
+      checkin_date: date,
+      question_id: a.question_id,
+      question: q.question,
+      emoji: q.emoji,
+      advice,
+      value: a.value >= 2 && a.value <= 10 ? a.value / 2 : a.value,
+    });
+  }
+  reminders.sort((a, b) => b.checkin_date.localeCompare(a.checkin_date));
+  return reminders;
+}
+
+// ---------------------------------------------------------------------------
+// Category average scores (for home grid card colors)
+// ---------------------------------------------------------------------------
+export interface CategoryAverages {
+  boss: number | null;
+  teammates: number | null;
+  classmates: number | null;
+}
+
+export async function getCategoryAverages(userId?: string): Promise<CategoryAverages> {
+  const supabase = getSupabaseOrNull();
+  if (!supabase) return { boss: null, teammates: null, classmates: null };
+  let uid = userId;
+  if (uid == null) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { boss: null, teammates: null, classmates: null };
+    uid = user.id;
+  }
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() - 14);
+  const fromStr = fromDate.toISOString().split('T')[0];
+  const { data: checkins } = await supabase
+    .from('daily_checkins')
+    .select('id')
+    .eq('user_id', uid)
+    .gte('checkin_date', fromStr);
+  if (!checkins?.length) return { boss: null, teammates: null, classmates: null };
+  const checkinIds = checkins.map((c) => c.id);
+  const { data: answers } = await supabase
+    .from('checkin_answers')
+    .select('question_id, value')
+    .in('checkin_id', checkinIds);
+  if (!answers?.length) return { boss: null, teammates: null, classmates: null };
+  const { data: questions } = await supabase
+    .from('checkin_questions')
+    .select('id, sort_order');
+  const qIdToSort = new Map<string, number>();
+  (questions ?? []).forEach((q: { id: string; sort_order: number }) => qIdToSort.set(q.id, q.sort_order));
+  const byCat: Record<string, number[]> = { boss: [], teammates: [], classmates: [] };
+  for (const a of answers) {
+    const sortOrder = qIdToSort.get(a.question_id);
+    if (sortOrder == null) continue;
+    const cat = SORT_ORDER_TO_RELATIONSHIP[sortOrder];
+    if (!cat || !byCat[cat]) continue;
+    const appValue = a.value >= 2 && a.value <= 10 ? a.value / 2 : a.value;
+    byCat[cat].push(appValue);
+  }
+  const avg = (arr: number[]) =>
+    arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : null;
+  return {
+    boss: avg(byCat.boss),
+    teammates: avg(byCat.teammates),
+    classmates: avg(byCat.classmates),
+  };
 }

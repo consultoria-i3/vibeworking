@@ -2,6 +2,7 @@
 import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
 import { View, ActivityIndicator, StyleSheet, Text, ScrollView } from 'react-native';
+import { colors } from '../src/theme';
 import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { Platform } from 'react-native';
@@ -16,16 +17,19 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading || isConfigError) return;
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    if (!session && !inAuthGroup) router.replace('/(auth)/login');
+    const first = segments?.[0];
+    const inAuthGroup = first === '(auth)';
+    const inTabsGroup = first === '(tabs)';
+    const isIndexOrInitial = !first || first === 'index';
+    if (!session && !inAuthGroup && !inTabsGroup && !isIndexOrInitial)
+      router.replace('/(auth)/login');
     else if (session && !inTabsGroup) router.replace('/(tabs)');
   }, [session, loading, segments, isConfigError]);
 
   if (loading) {
     return (
       <View style={[styles.loading, fullHeight]}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -60,10 +64,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F0A1A',
+    backgroundColor: colors.background,
   },
   errorContent: { padding: 24, flexGrow: 1, justifyContent: 'center' },
-  errorTitle: { fontSize: 20, fontWeight: '700', color: '#FF6B6B', marginBottom: 12 },
-  errorMessage: { fontSize: 14, color: '#C4B8DB', marginBottom: 16 },
-  errorHint: { fontSize: 13, color: '#8B7FA8' },
+  errorTitle: { fontSize: 20, fontWeight: '500', color: colors.error, marginBottom: 12 },
+  errorMessage: { fontSize: 14, color: colors.textSecondary, marginBottom: 16 },
+  errorHint: { fontSize: 13, color: colors.textMuted },
 });

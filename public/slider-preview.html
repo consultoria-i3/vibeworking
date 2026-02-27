@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slider Design Options — Vibe Working</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0F0A1A;
+      color: #fff;
+      padding: 24px;
+      margin: 0;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .sub { color: #8B7FA8; font-size: 14px; margin-bottom: 32px; }
+    .option {
+      background: #1A1429;
+      border: 1px solid #2D2640;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      max-width: 400px;
+    }
+    .option h2 {
+      font-size: 16px;
+      margin: 0 0 20px 0;
+      color: #C4B8DB;
+    }
+    .colors { display: flex; gap: 6px; margin-bottom: 16px; }
+    .dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .dot:hover { transform: scale(1.05); }
+    .dot.unselected { background: #2D2640; color: #8B7FA8; }
+    .dot.selected { color: #fff; border: 2px solid rgba(255,255,255,0.4); }
+    .pill {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(45,39,64,0.8);
+      border: 1px solid #2D2640;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 12px;
+      margin: 12px 0;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #2D2640;
+      border-radius: 6px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 11px;
+      background: #6C5CE7;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    .thin { height: 4px; }
+    .thin::-webkit-slider-thumb { width: 16px; height: 16px; border-radius: 8px; }
+    .accent-red { accent-color: #E8634A; }
+    .accent-orange { accent-color: #E8A94A; }
+    .accent-yellow { accent-color: #E8E84A; }
+    .accent-green { accent-color: #7BE84A; }
+    .accent-blue { accent-color: #4A90D9; }
+    .labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .labels span:first-child { color: #E8634A; }
+    .labels span:last-child { color: #4A90D9; }
+
+    /* Option A - Minimal */
+    .opt-a .dot { width: 32px; height: 32px; border-radius: 16px; font-size: 12px; }
+    .opt-a .selected { transform: scale(1.1); box-shadow: none; }
+
+    /* Option B - Bold */
+    .opt-b .selected { box-shadow: 0 0 12px currentColor; }
+    .opt-b .dot { width: 44px; height: 44px; border-radius: 22px; }
+
+    /* Option C - Bar/Gauge */
+    .bar-track {
+      height: 48px;
+      background: #2D2640;
+      border-radius: 24px;
+      display: flex;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .bar-segment {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      border-right: 1px solid rgba(0,0,0,0.2);
+    }
+    .bar-segment:last-child { border-right: none; }
+    .bar-segment.unfilled { opacity: 0.4; background: #2D2640 !important; color: #8B7FA8; }
+    .bar-segment.filled { opacity: 1; color: #fff; }
+    .bar-segment.active { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5); }
+  </style>
+</head>
+<body>
+  <h1>Slider Design Options — Preview</h1>
+  <p class="sub">Vibe Working · Dark theme · Click/tap to change value</p>
+
+  <!-- Option A: Minimal & Clean -->
+  <div class="option opt-a">
+    <h2>Option A — Minimal & Clean</h2>
+    <div class="labels"><span>Extremely Failed</span><span>Extremely Well</span></div>
+    <input type="range" min="1" max="5" value="3" class="thin" id="range-a" oninput="updateA(+this.value)">
+    <div class="colors" id="dots-a">
+      <div class="dot unselected selected" data-v="1" onclick="setA(1)">1</div>
+      <div class="dot unselected" data-v="2" onclick="setA(2)">2</div>
+      <div class="dot unselected" data-v="3" onclick="setA(3)">3</div>
+      <div class="dot unselected" data-v="4" onclick="setA(4)">4</div>
+      <div class="dot unselected" data-v="5" onclick="setA(5)">5</div>
+    </div>
+    <div style="font-size:13px;color:#8B7FA8">Well (3/5)</div>
+  </div>
+
+  <!-- Option B: Bold & Gamified -->
+  <div class="option opt-b">
+    <h2>Option B — Bold & Gamified</h2>
+    <div class="labels"><span>Extremely Failed</span><span>Extremely Well</span></div>
+    <input type="range" min="1" max="5" value="3" id="range-b" oninput="updateB(+this.value)">
+    <div class="colors" id="dots-b">
+      <div class="dot unselected" data-v="1" onclick="setB(1)" style="--c:#E8634A">1</div>
+      <div class="dot unselected" data-v="2" onclick="setB(2)" style="--c:#E8A94A">2</div>
+      <div class="dot unselected" data-v="3" onclick="setB(3)" style="--c:#E8E84A">3</div>
+      <div class="dot unselected" data-v="4" onclick="setB(4)" style="--c:#7BE84A">4</div>
+      <div class="dot unselected" data-v="5" onclick="setB(5)" style="--c:#4A90D9">5</div>
+    </div>
+    <div class="pill" id="pill-b" style="color:#E8E84A">3 — Okay</div>
+  </div>
+
+  <!-- Option C: Bar / Gauge -->
+  <div class="option opt-c">
+    <h2>Option C — Progress Bar / Gauge</h2>
+    <div class="bar-track" id="bar-c">
+      <div class="bar-segment filled active" data-v="1" style="background:#E8634A" onclick="setC(1)">1</div>
+      <div class="bar-segment filled" data-v="2" style="background:#E8A94A" onclick="setC(2)">2</div>
+      <div class="bar-segment filled" data-v="3" style="background:#E8E84A" onclick="setC(3)">3</div>
+      <div class="bar-segment unfilled" data-v="4" onclick="setC(4)">4</div>
+      <div class="bar-segment unfilled" data-v="5" onclick="setC(5)">5</div>
+    </div>
+    <div class="pill" id="pill-c" style="color:#E8E84A">3 — Okay</div>
+  </div>
+
+  <script>
+    const LABELS = ['Extremely Failed','Failed','Okay','Well','Extremely Well'];
+    const COLORS = ['#E8634A','#E8A94A','#E8E84A','#7BE84A','#4A90D9'];
+
+    function updateA(v) { setA(v); document.getElementById('range-a').value = v; }
+    function setA(v) {
+      document.getElementById('range-a').value = v;
+      document.querySelectorAll('#dots-a .dot').forEach((d,i) => {
+        d.classList.toggle('selected', +d.dataset.v === v);
+        d.style.background = +d.dataset.v === v ? COLORS[v-1] : '#2D2640';
+      });
+      document.querySelector('.opt-a .option > div:last-of-type').textContent = `${LABELS[v-1]} (${v}/5)`;
+    }
+
+    function updateB(v) { setB(v); document.getElementById('range-b').value = v; }
+    function setB(v) {
+      document.getElementById('range-b').value = v;
+      document.getElementById('range-b').className = 'accent-' + ['red','orange','yellow','green','blue'][v-1];
+      document.querySelectorAll('#dots-b .dot').forEach((d) => {
+        const active = +d.dataset.v === v;
+        d.classList.toggle('selected', active);
+        d.style.background = active ? COLORS[v-1] : '#2D2640';
+      });
+      document.getElementById('pill-b').textContent = `${v} — ${LABELS[v-1]}`;
+      document.getElementById('pill-b').style.color = COLORS[v-1];
+    }
+
+    function setC(v) {
+      document.querySelectorAll('#bar-c .bar-segment').forEach((d) => {
+        const i = +d.dataset.v;
+        d.classList.toggle('filled', i <= v);
+        d.classList.toggle('unfilled', i > v);
+        d.classList.toggle('active', i === v);
+      });
+      document.getElementById('pill-c').textContent = `${v} — ${LABELS[v-1]}`;
+      document.getElementById('pill-c').style.color = COLORS[v-1];
+    }
+
+    setA(3); setB(3); setC(3);
+  </script>
+</body>
+</html>

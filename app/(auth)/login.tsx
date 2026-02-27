@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
+import { Logo } from '../../src/components/Logo';
+import { colors } from '../../src/theme';
 
 export default function LoginScreen() {
   const { signInWithEmail, signInWithGoogle, error, loading } = useAuth();
@@ -37,7 +39,7 @@ export default function LoginScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.emoji}>💼</Text>
+          <Logo size={72} />
           <Text style={styles.title}>Vibe Working</Text>
           <Text style={styles.subtitle}>
             Your daily coaching companion for thriving at work
@@ -120,31 +122,28 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A1A',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 28,
+    paddingHorizontal: 12,
     paddingVertical: 40,
   },
   header: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  emoji: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
   title: {
     fontSize: 32,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
+    marginTop: 12,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -153,47 +152,48 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#C4B8DB',
+    fontWeight: '500',
+    color: colors.textSecondary,
     marginBottom: 6,
     marginTop: 16,
   },
   input: {
-    backgroundColor: '#1A1429',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#2D2640',
+    borderColor: colors.cardBorder,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: colors.text,
   },
   error: {
-    color: '#FF6B6B',
+    color: colors.error,
     fontSize: 14,
     marginTop: 12,
     textAlign: 'center',
   },
   button: {
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     alignItems: 'center',
     marginTop: 20,
   },
   primaryButton: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: 'transparent',
   },
   primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: '#4b5563',
+    fontSize: 15,
+    fontWeight: '500',
   },
   forgotButton: {
     alignItems: 'center',
     marginTop: 12,
   },
   forgotText: {
-    color: '#6C5CE7',
+    color: colors.accent,
     fontSize: 14,
   },
   divider: {
@@ -204,22 +204,23 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#2D2640',
+    backgroundColor: colors.cardBorder,
   },
   dividerText: {
-    color: '#8B7FA8',
+    color: colors.textMuted,
     paddingHorizontal: 16,
     fontSize: 14,
   },
   googleButton: {
-    backgroundColor: '#1A1429',
-    borderWidth: 1,
-    borderColor: '#2D2640',
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
   },
   googleButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#4b5563',
+    fontSize: 15,
+    fontWeight: '500',
   },
   footer: {
     flexDirection: 'row',
@@ -227,12 +228,12 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   footerText: {
-    color: '#8B7FA8',
+    color: colors.textMuted,
     fontSize: 14,
   },
   footerLink: {
-    color: '#6C5CE7',
+    color: colors.accent,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '500',
   },
 });

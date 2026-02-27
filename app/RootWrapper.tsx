@@ -1,6 +1,7 @@
 // Catches render errors so we never show a blank page
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../src/theme';
 
 type Props = { children: React.ReactNode };
 
@@ -30,20 +31,20 @@ export class RootErrorBoundary extends React.Component<
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A1A',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#FF6B6B',
+    fontWeight: '500',
+    color: colors.error,
     marginBottom: 12,
   },
   message: {
     fontSize: 14,
-    color: '#C4B8DB',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 });

@@ -1,8 +1,24 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
+import { colors, fonts } from '../../src/theme';
+
+type ReminderVia = 'sms' | 'whatsapp' | null;
 
 export default function ProfileScreen() {
-  const { profile, user, signOut } = useAuth();
+  const { profile, user, signOut, updateProfile } = useAuth();
+  const [reminderVia, setReminderVia] = useState<ReminderVia>(profile?.reminder_via ?? null);
+  const [reminderPhone, setReminderPhone] = useState(profile?.reminder_phone ?? '');
+  const [savingReminder, setSavingReminder] = useState(false);
+  const [phone, setPhone] = useState(profile?.phone ?? '');
+  const [savingPhone, setSavingPhone] = useState(false);
+
+  useEffect(() => {
+    setReminderVia(profile?.reminder_via ?? null);
+    setReminderPhone(profile?.reminder_phone ?? '');
+    setPhone(profile?.phone ?? '');
+  }, [profile?.reminder_via, profile?.reminder_phone, profile?.phone]);
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -12,11 +28,16 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.containerContent}>
+      <Link href="/(tabs)" asChild>
+        <TouchableOpacity style={styles.headerHomeLink}>
+          <Text style={styles.headerHomeLinkText}>🏠 Home</Text>
+        </TouchableOpacity>
+      </Link>
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {(profile?.display_name || user?.email || '?')[0].toUpperCase()}
+            {((profile?.display_name ?? user?.email ?? '?') || '?').charAt(0).toUpperCase()}
           </Text>
         </View>
         <Text style={styles.name}>
@@ -69,21 +90,104 @@ export default function ProfileScreen() {
               : 'Not set'}
           </Text>
         </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Phone</Text>
+          <Text style={styles.infoValue}>{profile?.phone || 'Not set'}</Text>
+        </View>
+        <Text style={styles.phoneEditLabel}>Update phone number</Text>
+        <TextInput
+          style={styles.phoneEditInput}
+          placeholder="e.g. +1 234 567 8900"
+          placeholderTextColor={colors.textMuted}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+        <TouchableOpacity
+          style={styles.phoneSaveButton}
+          onPress={() => { setSavingPhone(true); updateProfile({ phone: phone.trim() || null }).finally(() => setSavingPhone(false)); }}
+          disabled={savingPhone}
+        >
+          <Text style={styles.phoneSaveButtonText}>{savingPhone ? 'Saving...' : 'Save phone'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Reminder delivery</Text>
+        <Text style={styles.reminderConsent}>
+          Can we send you reminders via text or WhatsApp? (e.g. for questions you scored 3 or below)
+        </Text>
+        <View style={styles.reminderOptions}>
+          <TouchableOpacity
+            style={[styles.reminderOption, reminderVia === null && styles.reminderOptionActive]}
+            onPress={() => { setReminderVia(null); setSavingReminder(true); updateProfile({ reminder_via: null, reminder_phone: null }).finally(() => setSavingReminder(false)); }}
+          >
+            <Text style={[styles.reminderOptionText, reminderVia === null && styles.reminderOptionTextActive]}>In-app only</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.reminderOption, reminderVia === 'sms' && styles.reminderOptionActive]}
+            onPress={() => setReminderVia('sms')}
+          >
+            <Text style={[styles.reminderOptionText, reminderVia === 'sms' && styles.reminderOptionTextActive]}>SMS</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.reminderOption, reminderVia === 'whatsapp' && styles.reminderOptionActive]}
+            onPress={() => setReminderVia('whatsapp')}
+          >
+            <Text style={[styles.reminderOptionText, reminderVia === 'whatsapp' && styles.reminderOptionTextActive]}>WhatsApp</Text>
+          </TouchableOpacity>
+        </View>
+        {(reminderVia === 'sms' || reminderVia === 'whatsapp') && (
+          <>
+            <Text style={styles.reminderPhoneLabel}>Phone number</Text>
+            <TextInput
+              style={styles.reminderPhoneInput}
+              placeholder="e.g. +1 234 567 8900"
+              placeholderTextColor={colors.textMuted}
+              value={reminderPhone}
+              onChangeText={setReminderPhone}
+              keyboardType="phone-pad"
+            />
+            <TouchableOpacity
+              style={styles.reminderSaveButton}
+              onPress={() => { setSavingReminder(true); updateProfile({ reminder_via: reminderVia, reminder_phone: reminderPhone.trim() || null }).finally(() => setSavingReminder(false)); }}
+              disabled={savingReminder}
+            >
+              <Text style={styles.reminderSaveButtonText}>{savingReminder ? 'Saving...' : 'Save & allow reminders'}</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A1A',
-    paddingHorizontal: 20,
+    backgroundColor: colors.background,
+  },
+  containerContent: {
+    paddingHorizontal: 12,
     paddingTop: 60,
+    paddingBottom: 40,
+  },
+  headerHomeLink: {
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  headerHomeLinkText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#4b5563',
   },
   header: {
     alignItems: 'center',
@@ -93,46 +197,46 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
   avatarText: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
   },
   name: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
     marginBottom: 4,
   },
   email: {
     fontSize: 14,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
     marginBottom: 8,
   },
   tierBadge: {
-    backgroundColor: '#2D1F4E',
+    backgroundColor: colors.primary,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 4,
   },
   tierText: {
-    color: '#6C5CE7',
+    color: colors.logoYellow,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   stats: {
     flexDirection: 'row',
-    backgroundColor: '#1A1429',
+    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#2D2640',
+    borderColor: colors.cardBorder,
   },
   statItem: {
     flex: 1,
@@ -140,30 +244,30 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 13,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#2D2640',
+    backgroundColor: colors.cardBorder,
   },
   section: {
-    backgroundColor: '#1A1429',
+    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#2D2640',
+    borderColor: colors.cardBorder,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
     marginBottom: 16,
   },
   infoRow: {
@@ -171,28 +275,115 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#2D2640',
+    borderBottomColor: colors.cardBorder,
   },
   infoLabel: {
     fontSize: 14,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
   },
   infoValue: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: colors.text,
     fontWeight: '500',
   },
-  signOutButton: {
-    backgroundColor: '#2D1F4E',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
+  phoneEditLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  phoneEditInput: {
     borderWidth: 1,
-    borderColor: '#FF6B6B33',
+    borderColor: colors.cardBorder,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 8,
+  },
+  phoneSaveButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  phoneSaveButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#4b5563',
+  },
+  signOutButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
   },
   signOutText: {
-    color: '#FF6B6B',
+    color: '#4b5563',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  reminderConsent: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  reminderOptions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  reminderOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.background,
+  },
+  reminderOptionActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '18',
+  },
+  reminderOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  reminderOptionTextActive: {
+    color: colors.primary,
+  },
+  reminderPhoneLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: 6,
+  },
+  reminderPhoneInput: {
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontSize: 16,
-    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  reminderSaveButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  reminderSaveButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#4b5563',
   },
 });

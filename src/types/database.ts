@@ -25,13 +25,16 @@ export interface Profile {
   subscription_tier: SubscriptionTier;
   streak_count: number;
   last_checkin_date: string | null;
+  phone: string | null;
+  reminder_via: 'sms' | 'whatsapp' | null;
+  reminder_phone: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export type ProfileUpdate = Partial<Pick<
   Profile,
-  'display_name' | 'graduation_type' | 'job_title' | 'industry' | 'avatar_url' | 'onboarding_completed'
+  'display_name' | 'graduation_type' | 'job_title' | 'industry' | 'avatar_url' | 'onboarding_completed' | 'phone' | 'reminder_via' | 'reminder_phone'
 >>;
 
 // ---------------------------------------------------------------------------
@@ -113,6 +116,28 @@ export interface CheckinQuestionWithTips extends CheckinQuestion {
 }
 
 // ---------------------------------------------------------------------------
+// Show me (image → text → tip)
+// ---------------------------------------------------------------------------
+export interface RecommendationGuideline {
+  id: string;
+  label: string;
+  keywords: string[];
+  tip_text: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShowMeEntry {
+  id: string;
+  user_id: string;
+  image_path: string | null;
+  transcribed_text: string;
+  tip_text: string;
+  created_at: string;
+}
+
+// ---------------------------------------------------------------------------
 // Behavior Sliders
 // ---------------------------------------------------------------------------
 export interface BehaviorSlider {
@@ -150,7 +175,7 @@ export interface CheckinAnswer {
   id: string;
   checkin_id: string;
   question_id: string;
-  value: number; // 1–5
+  value: number; // 1–5 in 0.5 steps (app); DB stores 2–10
   detail_text: string | null;
   created_at: string;
 }
@@ -313,4 +338,34 @@ export interface Subscription {
   cancel_at_period_end: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Teams & Conversation Analysis
+// ---------------------------------------------------------------------------
+export interface Team {
+  id: string;
+  name: string;
+  invite_code: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+}
+
+export interface ConversationAnalysis {
+  id: string;
+  user_id: string;
+  team_id: string | null;
+  other_member_name: string | null;
+  conversation_text: string;
+  recommendation_text: string;
+  created_at: string;
 }

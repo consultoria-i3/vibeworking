@@ -137,7 +137,11 @@ function useAuthInternal(): AuthContextType {
         password,
         options: { data: { full_name: name } },
       });
-      if (error) setState((s) => ({ ...s, error: error.message, loading: false }));
+      if (error) {
+        setState((s) => ({ ...s, error: error.message, loading: false }));
+      } else {
+        setState((s) => ({ ...s, loading: false }));
+      }
     },
     [],
   );

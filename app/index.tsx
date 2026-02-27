@@ -1,6 +1,6 @@
-// Root path: redirect to login (auth will then send to (tabs) if logged in)
+// Root path: home screen (tabs). Auth gate redirects unauthenticated users to login.
 import { Redirect } from 'expo-router';
 
 export default function Index() {
-  return <Redirect href="/(auth)/login" />;
+  return <Redirect href="/(tabs)" />;
 }

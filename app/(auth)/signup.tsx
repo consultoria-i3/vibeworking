@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
+import { Logo } from '../../src/components/Logo';
+import { colors } from '../../src/theme';
 
 export default function SignupScreen() {
   const { signUpWithEmail, error, loading } = useAuth();
@@ -26,7 +28,7 @@ export default function SignupScreen() {
       return;
     }
     if (password !== confirm) {
-      Alert.alert('Error', 'Passwords dont match');
+      Alert.alert('Error', "Passwords don't match");
       return;
     }
     if (password.length < 6) {
@@ -46,6 +48,7 @@ export default function SignupScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
+          <Logo size={64} />
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.sub}>
             Start your journey to a better work life
@@ -126,12 +129,12 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A1A',
+    backgroundColor: colors.background,
   },
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 28,
+    paddingHorizontal: 12,
     paddingVertical: 40,
   },
   header: {
@@ -140,49 +143,51 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
+    marginTop: 12,
     marginBottom: 8,
   },
   sub: {
     fontSize: 16,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#C4B8DB',
+    fontWeight: '500',
+    color: colors.textSecondary,
     marginBottom: 6,
     marginTop: 16,
   },
   input: {
-    backgroundColor: '#1A1429',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#2D2640',
+    borderColor: colors.cardBorder,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: colors.text,
   },
   error: {
-    color: '#FF6B6B',
+    color: colors.error,
     fontSize: 14,
     marginTop: 12,
     textAlign: 'center',
   },
   btn: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: 'transparent',
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     alignItems: 'center',
     marginTop: 20,
   },
   btnText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: '#4b5563',
+    fontSize: 15,
+    fontWeight: '500',
   },
   footer: {
     flexDirection: 'row',
@@ -190,12 +195,12 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   footerText: {
-    color: '#8B7FA8',
+    color: colors.textMuted,
     fontSize: 14,
   },
   footerLink: {
-    color: '#6C5CE7',
+    color: colors.accent,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '500',
   },
 });

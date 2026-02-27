@@ -86,11 +86,13 @@ export function useCheckin(userId: string | undefined) {
           const q = questions.find((q) => q.id === a.questionId);
           const sortOrder = q?.sortOrder ?? parseInt(a.questionId.replace('q', ''), 10);
           const dbId = questionIdMap.get(sortOrder);
+          // Store 1–5 (0.5 steps) as 2–10 in DB
+          const storedValue = Math.round(a.value * 2);
           return dbId
             ? {
                 checkin_id: checkin.id,
                 question_id: dbId,
-                value: a.value,
+                value: storedValue,
                 detail_text: a.detailText ?? null,
               }
             : null;

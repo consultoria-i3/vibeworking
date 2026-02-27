@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
 import { View, ActivityIndicator, StyleSheet, Text, ScrollView } from 'react-native';
+import { colors } from '../src/theme';
 import { Platform } from 'react-native';
 import { RootErrorBoundary } from './RootWrapper';
 
@@ -15,16 +16,20 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading || isConfigError) return;
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    if (!session && !inAuthGroup) router.replace('/(auth)/login');
+    const first = segments?.[0];
+    const inAuthGroup = first === '(auth)';
+    const inTabsGroup = first === '(tabs)';
+    const isIndexOrInitial = !first || first === 'index'; // root index redirects to tabs
+    // Allow visitors on (tabs) and on index (redirects to tabs)
+    if (!session && !inAuthGroup && !inTabsGroup && !isIndexOrInitial)
+      router.replace('/(auth)/login');
     else if (session && !inTabsGroup) router.replace('/(tabs)');
   }, [session, loading, segments, isConfigError]);
 
   if (loading) {
     return (
       <View style={[styles.loading, fullHeight]}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color={colors.accent} />
         <Text style={styles.loadingText}>Vibe Working</Text>
       </View>
     );
@@ -70,20 +75,20 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  root: { backgroundColor: '#0F0A1A' },
+  root: { backgroundColor: colors.background },
   loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F0A1A',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 18,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
   },
   errorContent: { padding: 24, flexGrow: 1, justifyContent: 'center' },
-  errorTitle: { fontSize: 20, fontWeight: '700', color: '#FF6B6B', marginBottom: 12 },
-  errorMessage: { fontSize: 14, color: '#C4B8DB', marginBottom: 16 },
-  errorHint: { fontSize: 13, color: '#8B7FA8' },
+  errorTitle: { fontSize: 20, fontWeight: '500', color: colors.error, marginBottom: 12 },
+  errorMessage: { fontSize: 14, color: colors.textSecondary, marginBottom: 16 },
+  errorHint: { fontSize: 13, color: colors.textMuted },
 });

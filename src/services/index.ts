@@ -8,3 +8,4 @@ export * as contacts from './contacts';
 export * as mood from './mood';
 export * as anonymous from './anonymous';
 export * as notes from './notes';
+export * as showMe from './showMe';

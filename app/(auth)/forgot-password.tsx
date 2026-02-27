@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
+import { Logo } from '../../src/components/Logo';
+import { colors } from '../../src/theme';
 
 export default function ForgotPasswordScreen() {
   const { resetPassword } = useAuth();
@@ -28,6 +30,7 @@ export default function ForgotPasswordScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        <Logo size={56} />
         <Text style={styles.title}>Reset Password</Text>
         {sent ? (
           <View>
@@ -78,61 +81,63 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A1A',
+    backgroundColor: colors.background,
     justifyContent: 'center',
-    paddingHorizontal: 28,
+    paddingHorizontal: 12,
   },
   content: {
     alignItems: 'center',
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    color: colors.text,
+    marginTop: 12,
     marginBottom: 8,
   },
   sub: {
     fontSize: 16,
-    color: '#8B7FA8',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#C4B8DB',
+    fontWeight: '500',
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#1A1429',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#2D2640',
+    borderColor: colors.cardBorder,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: colors.text,
     width: 300,
   },
   btn: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: 'transparent',
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     alignItems: 'center',
     marginTop: 20,
     width: 300,
   },
   btnText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: '#4b5563',
+    fontSize: 15,
+    fontWeight: '500',
   },
   back: {
     marginTop: 16,
     alignItems: 'center',
   },
   backText: {
-    color: '#6C5CE7',
+    color: colors.accent,
     fontSize: 14,
   },
 });
