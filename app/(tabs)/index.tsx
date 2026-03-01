@@ -847,10 +847,7 @@ export default function HomeScreen() {
             </View>
         </View>
 
-        {/* Fireside check-in section */}
-        {renderCheckinSection()}
-
-        {/* Main content area: Fireside or selected section (same card design, then Start → content) */}
+        {/* Main content area: Fireside check-in lives in the main card; categories go below */}
         <View style={styles.mainContentWrap}>
         {activeSection === 'minetoo' && sectionChatStarted === 'minetoo' ? (
           (() => {
@@ -946,54 +943,21 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        ) : activeSection === 'minetoo' ? (
-          <View style={[styles.sectionCard, { backgroundColor: LIGHT_PURPLE }]}>
-            <View style={styles.sectionCardEmoji}>
-              <SectionIcon iconId={MINETOO_SECTION.icon} size={40} />
+        ) : (
+          /* Default: Fireside check-in inside the main card */
+          renderCheckinSection() ?? (
+            <View style={[styles.sectionCard, { backgroundColor: LIGHT_PURPLE }]}>
+              <Text style={styles.sectionCardTitle}>{t.home.firesideQuestion}</Text>
+              <Text style={styles.sectionCardDesc}>{t.home.firesideDesc}</Text>
             </View>
-            <Text style={styles.sectionCardTitle}>{MINETOO_SECTION.title}</Text>
-            <Text style={styles.sectionCardDesc}>{MINETOO_SECTION.desc}</Text>
-            <TouchableOpacity
-              style={[styles.startFiresideButton, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonHover]}
-              onPress={() => { setSectionChatStarted('minetoo'); setMinetooFlowStep(0); setContactsFamily(null); setContactsClosestFriends(null); setContactsColleagues(null); }}
-              {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
-            >
-              <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>{t.home.start}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (() => {
-          const cat = categories.find((c) => c.slug === activeSection);
-          if (!cat) return null;
-          const hasAnyScores =
-            effectiveAverages.boss != null ||
-            effectiveAverages.teammates != null ||
-            effectiveAverages.classmates != null;
-          const bgColor = hasAnyScores && user
-            ? (getSliderColor(effectiveAverages[cat.slug as 'boss' | 'teammates' | 'classmates'] ?? 0) ?? LIGHT_PURPLE)
-            : (CATEGORY_COLORS[cat.slug] ?? LIGHT_PURPLE);
-          return (
-            <View style={[styles.sectionCard, { backgroundColor: bgColor }]}>
-              <View style={styles.sectionCardEmoji}>
-                <SectionIcon iconId={cat.icon} size={40} />
-              </View>
-              <Text style={styles.sectionCardTitle}>{cat.title}</Text>
-              <Text style={styles.sectionCardDesc}>{cat.desc}</Text>
-              <TouchableOpacity
-                style={[styles.startFiresideButton, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonHover]}
-                onPress={() => setSectionChatStarted(activeSection)}
-                {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
-              >
-                <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>{t.home.start}</Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })()}
+          )
+        )}
         </View>
 
         {/* All sections: scroll to see (Fireside, Boss, Teammates, etc.) */}
         <View style={styles.sectionSelectorWrap}>
           <View style={styles.grid}>
-            {categories.filter((cat) => cat.slug !== activeSection).map((cat) => {
+            {categories.map((cat) => {
               const hasAnyScores =
                 effectiveAverages.boss != null ||
                 effectiveAverages.teammates != null ||
@@ -1007,7 +971,7 @@ export default function HomeScreen() {
                 <React.Fragment key={cat.slug}>
                   <TouchableOpacity
                     style={[styles.gridCard, { backgroundColor: bgColor }]}
-                    onPress={() => setActiveSectionAndScroll(cat.slug as typeof activeSection)}
+                    onPress={() => { setActiveSection(cat.slug as typeof activeSection); setSectionChatStarted(cat.slug as typeof activeSection); }}
                     activeOpacity={0.8}
                   >
                     <View style={styles.gridTitleRow}>
@@ -1286,12 +1250,11 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   firesideStartCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 6,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    backgroundColor: LIGHT_PURPLE,
+    borderRadius: 14,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginBottom: 16,
     alignItems: 'center',
   },
   startFiresideButton: {
