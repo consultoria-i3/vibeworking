@@ -847,6 +847,9 @@ export default function HomeScreen() {
             </View>
         </View>
 
+        {/* Fireside check-in section */}
+        {renderCheckinSection()}
+
         {/* Main content area: Fireside or selected section (same card design, then Start → content) */}
         <View style={styles.mainContentWrap}>
         {activeSection === 'minetoo' && sectionChatStarted === 'minetoo' ? (
