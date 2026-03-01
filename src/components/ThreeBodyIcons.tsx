@@ -5,10 +5,11 @@ import type { SectionIconId } from '../types/sectionIcon';
 
 const VIEW_BOX = '0 0 200 200';
 
-/** 1. Orbital System */
+/** 1. Orbital System (white bg) */
 function IconOrbital({ width = 40, height = 40 }: { width?: number; height?: number }) {
   return (
     <Svg width={width} height={height} viewBox={VIEW_BOX}>
+      <Rect width="200" height="200" fill="#ffffff" />
       <Defs>
         <RadialGradient id="orbital-g1" cx="50%" cy="50%" r="50%">
           <Stop offset="0%" stopColor="#ffd700" />
@@ -39,10 +40,11 @@ function IconOrbital({ width = 40, height = 40 }: { width?: number; height?: num
   );
 }
 
-/** 2. Gravitational Triangle */
+/** 2. Gravitational Triangle (white bg) */
 function IconTriangle({ width = 40, height = 40 }: { width?: number; height?: number }) {
   return (
     <Svg width={width} height={height} viewBox={VIEW_BOX}>
+      <Rect width="200" height="200" fill="#ffffff" />
       <Defs>
         <LinearGradient id="triangle-lg1" x1="0%" y1="0%" x2="100%" y2="100%">
           <Stop offset="0%" stopColor="#6366f1" />
@@ -63,10 +65,11 @@ function IconTriangle({ width = 40, height = 40 }: { width?: number; height?: nu
   );
 }
 
-/** 3. Chaotic Motion */
+/** 3. Chaotic Motion (white bg) */
 function IconChaotic({ width = 40, height = 40 }: { width?: number; height?: number }) {
   return (
     <Svg width={width} height={height} viewBox={VIEW_BOX}>
+      <Rect width="200" height="200" fill="#ffffff" />
       <Path d="M60,60 C90,30 150,50 130,90 S70,130 100,150 S160,140 140,100 S50,80 60,60Z" fill="none" stroke="#ff6b6b" strokeWidth={1.5} opacity={0.6} />
       <Path d="M140,50 C110,70 60,40 80,100 S130,160 100,140 S40,120 70,90 S150,40 140,50Z" fill="none" stroke="#4ecdc4" strokeWidth={1.5} opacity={0.6} />
       <Path d="M80,160 C120,130 170,150 130,110 S50,60 90,70 S150,100 120,130 S60,170 80,160Z" fill="none" stroke="#ffe66d" strokeWidth={1.5} opacity={0.6} />
@@ -80,10 +83,11 @@ function IconChaotic({ width = 40, height = 40 }: { width?: number; height?: num
   );
 }
 
-/** 4. Figure-8 Solution */
+/** 4. Figure-8 Solution (white bg) */
 function IconFigure8({ width = 40, height = 40 }: { width?: number; height?: number }) {
   return (
     <Svg width={width} height={height} viewBox={VIEW_BOX}>
+      <Rect width="200" height="200" fill="#ffffff" />
       <Defs>
         <LinearGradient id="fig8-grad" x1="0%" y1="0%" x2="100%" y2="0%">
           <Stop offset="0%" stopColor="#06b6d4" />
@@ -102,56 +106,77 @@ function IconFigure8({ width = 40, height = 40 }: { width?: number; height?: num
   );
 }
 
-/** 5. Flat/App-style */
+/** 5. Solar system: central sun + 3 orbits, 3 planets only (white bg) */
 function IconApp({ width = 40, height = 40 }: { width?: number; height?: number }) {
   return (
     <Svg width={width} height={height} viewBox={VIEW_BOX}>
-      <Defs>
-        <LinearGradient id="app-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <Stop offset="0%" stopColor="#1e1b4b" />
-          <Stop offset="100%" stopColor="#0f172a" />
-        </LinearGradient>
-      </Defs>
-      <Rect x="10" y="10" width="180" height="180" rx="36" fill="url(#app-bg)" stroke="#334155" strokeWidth={1} />
-      <Circle cx="100" cy="100" r="55" fill="none" stroke="#475569" strokeWidth={0.8} strokeDasharray="3,3" />
-      <Circle cx="100" cy="100" r="35" fill="none" stroke="#475569" strokeWidth={0.8} strokeDasharray="3,3" />
-      <Line x1="70" y1="65" x2="135" y2="90" stroke="#64748b" strokeWidth={0.8} />
-      <Line x1="135" y1="90" x2="80" y2="140" stroke="#64748b" strokeWidth={0.8} />
-      <Line x1="80" y1="140" x2="70" y2="65" stroke="#64748b" strokeWidth={0.8} />
-      <Circle cx="70" cy="65" r="12" fill="#f97316" />
-      <Circle cx="135" cy="90" r="9" fill="#3b82f6" />
-      <Circle cx="80" cy="140" r="10" fill="#10b981" />
-      <Circle cx="95" cy="98" r="3" fill="#ffffff" opacity={0.4} />
+      <Rect width="200" height="200" fill="#ffffff" />
+      {/* Central sun */}
+      <Circle cx="100" cy="100" r="22" fill="#f97316" />
+      <Circle cx="100" cy="100" r="26" fill="none" stroke="#ea580c" strokeWidth={1} opacity={0.6} />
+      {/* 3 orbital paths */}
+      <Ellipse cx="100" cy="100" rx="48" ry="28" fill="none" stroke="#dc2626" strokeWidth={1.2} transform="rotate(-15 100 100)" />
+      <Ellipse cx="100" cy="100" rx="62" ry="36" fill="none" stroke="#16a34a" strokeWidth={1.2} transform="rotate(25 100 100)" />
+      <Ellipse cx="100" cy="100" rx="78" ry="42" fill="none" stroke="#2563eb" strokeWidth={1.2} transform="rotate(70 100 100)" />
+      {/* 3 planets (only 3 circles) */}
+      <Circle cx="100" cy="72" r="8" fill="#b91c1c" />
+      <Circle cx="138" cy="118" r="10" fill="#15803d" />
+      <Circle cx="62" cy="142" r="11" fill="#1d4ed8" />
     </Svg>
   );
 }
 
-/** 6. Three Suns */
+/** 6. Three gradient circles only – three-body style (white bg) */
 function IconSuns({ width = 40, height = 40 }: { width?: number; height?: number }) {
   return (
     <Svg width={width} height={height} viewBox={VIEW_BOX}>
+      <Rect width="200" height="200" fill="#ffffff" />
       <Defs>
-        <RadialGradient id="suns-bg" cx="50%" cy="50%" r="60%">
-          <Stop offset="0%" stopColor="#1a1a2e" />
-          <Stop offset="100%" stopColor="#000000" />
-        </RadialGradient>
+        <LinearGradient id="suns-g1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <Stop offset="0%" stopColor="#fbbf24" />
+          <Stop offset="100%" stopColor="#f97316" />
+        </LinearGradient>
+        <LinearGradient id="suns-g2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <Stop offset="0%" stopColor="#a855f7" />
+          <Stop offset="100%" stopColor="#6366f1" />
+        </LinearGradient>
+        <LinearGradient id="suns-g3" x1="0%" y1="100%" x2="100%" y2="0%">
+          <Stop offset="0%" stopColor="#22d3ee" />
+          <Stop offset="100%" stopColor="#06b6d4" />
+        </LinearGradient>
       </Defs>
-      <Rect width="200" height="200" fill="url(#suns-bg)" />
-      <Circle cx="30" cy="20" r="1" fill="#fff" opacity={0.4} />
-      <Circle cx="170" cy="30" r="1" fill="#fff" opacity={0.3} />
-      <Circle cx="150" cy="170" r="1" fill="#fff" opacity={0.5} />
-      <Circle cx="70" cy="70" r="25" fill="#ff4500" opacity={0.08} />
-      <Circle cx="70" cy="70" r="18" fill="#ff4500" opacity={0.15} />
-      <Circle cx="70" cy="70" r="12" fill="#ff6347" />
-      <Circle cx="140" cy="60" r="20" fill="#ffa500" opacity={0.08} />
-      <Circle cx="140" cy="60" r="14" fill="#ffa500" opacity={0.15} />
-      <Circle cx="140" cy="60" r="9" fill="#ffa500" />
-      <Circle cx="95" cy="140" r="22" fill="#ff1493" opacity={0.08} />
-      <Circle cx="95" cy="140" r="16" fill="#ff1493" opacity={0.12} />
-      <Circle cx="95" cy="140" r="10" fill="#ff1493" />
-      <Path d="M82,70 Q110,50 131,60" fill="none" stroke="#ffffff15" strokeWidth={1} />
-      <Path d="M149,60 Q130,100 105,140" fill="none" stroke="#ffffff15" strokeWidth={1} />
-      <Path d="M85,140 Q70,105 70,82" fill="none" stroke="#ffffff15" strokeWidth={1} />
+      {/* Only 3 inside circles */}
+      <Circle cx="70" cy="65" r="24" fill="url(#suns-g1)" />
+      <Circle cx="70" cy="65" r="28" fill="none" stroke="#f59e0b" strokeWidth={1.5} opacity={0.4} />
+      <Circle cx="130" cy="60" r="20" fill="url(#suns-g2)" />
+      <Circle cx="130" cy="60" r="24" fill="none" stroke="#7c3aed" strokeWidth={1.5} opacity={0.4} />
+      <Circle cx="100" cy="135" r="22" fill="url(#suns-g3)" />
+      <Circle cx="100" cy="135" r="26" fill="none" stroke="#0891b2" strokeWidth={1.5} opacity={0.4} />
+    </Svg>
+  );
+}
+
+/** 7. Blueprint orbital: central dot + 3 arcs + 3 circles in 3 colors (white bg) */
+function IconBlueprint({ width = 40, height = 40 }: { width?: number; height?: number }) {
+  const blue = '#2563eb';
+  const emerald = '#059669';
+  const violet = '#7c3aed';
+  return (
+    <Svg width={width} height={height} viewBox={VIEW_BOX}>
+      <Rect width="200" height="200" fill="#ffffff" />
+      {/* Central origin dot */}
+      <Circle cx="100" cy="100" r="4" fill={violet} />
+      {/* 3 orbital arcs – blueprint style, dashed */}
+      <Ellipse cx="100" cy="100" rx="72" ry="42" fill="none" stroke={blue} strokeWidth={1.2} strokeDasharray="4,3" transform="rotate(-25 100 100)" />
+      <Ellipse cx="100" cy="100" rx="58" ry="38" fill="none" stroke={emerald} strokeWidth={1.2} strokeDasharray="4,3" transform="rotate(35 100 100)" />
+      <Ellipse cx="100" cy="100" rx="45" ry="32" fill="none" stroke={violet} strokeWidth={1.2} strokeDasharray="4,3" transform="rotate(95 100 100)" />
+      {/* 3 circles (bodies) in 3 colors */}
+      <Circle cx="72" cy="62" r="12" fill={blue} />
+      <Circle cx="72" cy="62" r="14" fill="none" stroke={blue} strokeWidth={1} opacity={0.5} />
+      <Circle cx="132" cy="98" r="11" fill={emerald} />
+      <Circle cx="132" cy="98" r="13" fill="none" stroke={emerald} strokeWidth={1} opacity={0.5} />
+      <Circle cx="78" cy="138" r="12" fill={violet} />
+      <Circle cx="78" cy="138" r="14" fill="none" stroke={violet} strokeWidth={1} opacity={0.5} />
     </Svg>
   );
 }
@@ -163,6 +188,8 @@ const ICON_COMPONENTS: Record<SectionIconId, React.FC<{ width?: number; height?:
   figure8: IconFigure8,
   app: IconApp,
   suns: IconSuns,
+  fireside: IconOrbital,
+  blueprint: IconBlueprint,
 };
 
 export interface SectionIconProps {
@@ -174,7 +201,17 @@ export function SectionIcon({ iconId, size = 40 }: SectionIconProps) {
   const Icon = ICON_COMPONENTS[iconId];
   if (!Icon) return null;
   return (
-    <View style={{ width: size, height: size }}>
+    <View
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: '#ffffff',
+        borderRadius: size * 0.2,
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
       <Icon width={size} height={size} />
     </View>
   );

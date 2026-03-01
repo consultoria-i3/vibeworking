@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Link } from 'expo-router';
-import { Logo } from '../../src/components/Logo';
 import { colors } from '../../src/theme';
 import { CATEGORY_COLORS } from '../../src/constants/categories';
+import { useT } from '../../src/i18n';
 
 export default function CoachingScreen() {
+  const t = useT();
   const { slug } = useLocalSearchParams<{ slug?: string }>();
   const sectionColor = slug ? (CATEGORY_COLORS[slug] ?? colors.background) : colors.background;
 
@@ -12,13 +13,12 @@ export default function CoachingScreen() {
     <View style={[styles.container, { backgroundColor: sectionColor }]}>
       <Link href="/(tabs)" asChild>
         <TouchableOpacity style={styles.homeLink} accessibilityLabel="Go to home">
-          <Text style={styles.homeLinkText}>🏠 Home</Text>
+          <Text style={styles.homeLinkText}>{t.nav.home}</Text>
         </TouchableOpacity>
       </Link>
       <View style={[styles.innerSection, { backgroundColor: sectionColor }]}>
-        <Logo size={64} />
-        <Text style={styles.title}>Coaching</Text>
-        <Text style={styles.subtitle}>Coming soon — coaching categories will load here</Text>
+        <Text style={styles.title}>{t.coaching.title}</Text>
+        <Text style={styles.subtitle}>{t.coaching.comingSoon}</Text>
       </View>
     </View>
   );

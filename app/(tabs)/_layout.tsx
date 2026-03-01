@@ -1,8 +1,10 @@
 import { Tabs } from 'expo-router';
 import { Text, View, Platform } from 'react-native';
 import { colors } from '../../src/theme';
+import { getT } from '../../src/i18n';
+import { SectionIcon } from '../../src/components/ThreeBodyIcons';
 
-const iconWrap = Platform.OS === 'web' ? { filter: 'grayscale(1)' as const } : {};
+const iconWrap = Platform.OS === 'web' ? ({ filter: 'grayscale(1)' } as any) : {};
 
 export default function TabsLayout() {
   return (
@@ -35,28 +37,28 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="checkin"
         options={{
-          title: 'Check In',
+          title: getT().nav.checkin,
           tabBarIcon: ({ color }) => <View style={iconWrap}><Text style={{ fontSize: 20 }}>🪞</Text></View>,
         }}
       />
       <Tabs.Screen
         name="teams"
         options={{
-          title: 'Teams',
+          title: getT().nav.teams,
           tabBarIcon: ({ color }) => <View style={iconWrap}><Text style={{ fontSize: 20 }}>👥</Text></View>,
         }}
       />
       <Tabs.Screen
         name="contacts"
         options={{
-          title: 'Contacts',
-          tabBarIcon: ({ color }) => <View style={iconWrap}><Text style={{ fontSize: 20 }}>👨‍👩‍👧‍👦</Text></View>,
+          title: getT().nav.contacts,
+          tabBarIcon: () => <View style={iconWrap}><SectionIcon iconId="blueprint" size={24} /></View>,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: getT().nav.profile,
           tabBarIcon: ({ color }) => <View style={iconWrap}><Text style={{ fontSize: 20 }}>👤</Text></View>,
         }}
       />

@@ -12,17 +12,18 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
-import { Logo } from '../../src/components/Logo';
 import { colors } from '../../src/theme';
+import { useT } from '../../src/i18n';
 
 export default function LoginScreen() {
   const { signInWithEmail, signInWithGoogle, error, loading } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Missing fields', 'Please enter both email and password.');
+      Alert.alert(t.auth.missingFields, t.auth.fillAllFields);
       return;
     }
     await signInWithEmail(email.trim(), password);
@@ -39,19 +40,18 @@ export default function LoginScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Logo size={72} />
-          <Text style={styles.title}>Vibe Working</Text>
+          <Text style={styles.title}>{t.appName}</Text>
           <Text style={styles.subtitle}>
-            Your daily coaching companion for thriving at work
+            {t.auth.subtitle}
           </Text>
         </View>
 
         {/* Email Form */}
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t.auth.email}</Text>
           <TextInput
             style={styles.input}
-            placeholder="you@example.com"
+            placeholder={t.auth.emailPlaceholder}
             placeholderTextColor="#555"
             value={email}
             onChangeText={setEmail}
@@ -60,10 +60,10 @@ export default function LoginScreen() {
             autoCorrect={false}
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t.auth.password}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Your password"
+            placeholder={t.auth.passwordPlaceholder}
             placeholderTextColor="#555"
             value={password}
             onChangeText={setPassword}
@@ -78,13 +78,13 @@ export default function LoginScreen() {
             disabled={loading}
           >
             <Text style={styles.primaryButtonText}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t.auth.signingIn : t.auth.signIn}
             </Text>
           </TouchableOpacity>
 
           <Link href="/(auth)/forgot-password" asChild>
             <TouchableOpacity style={styles.forgotButton}>
-              <Text style={styles.forgotText}>Forgot password?</Text>
+              <Text style={styles.forgotText}>{t.auth.forgotPassword}</Text>
             </TouchableOpacity>
           </Link>
         </View>
@@ -92,7 +92,7 @@ export default function LoginScreen() {
         {/* Divider */}
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
+          <Text style={styles.dividerText}>{t.auth.or}</Text>
           <View style={styles.dividerLine} />
         </View>
 
@@ -102,15 +102,15 @@ export default function LoginScreen() {
           onPress={signInWithGoogle}
           disabled={loading}
         >
-          <Text style={styles.googleButtonText}>🔵  Continue with Google</Text>
+          <Text style={styles.googleButtonText}>{t.auth.continueWithGoogle}</Text>
         </TouchableOpacity>
 
         {/* Sign Up Link */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={styles.footerText}>{t.auth.noAccount} </Text>
           <Link href="/(auth)/signup" asChild>
             <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign Up</Text>
+              <Text style={styles.footerLink}>{t.auth.signUp}</Text>
             </TouchableOpacity>
           </Link>
         </View>

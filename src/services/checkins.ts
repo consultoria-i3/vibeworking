@@ -51,6 +51,7 @@ export async function saveCheckin(input: CheckinInput): Promise<CheckinWithAnswe
         checkin_id: 'offline-pending',
         question_id: a.question_id,
         value: a.value,
+        detail_text: a.detail_text ?? null,
         created_at: new Date().toISOString(),
       })),
     };

@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
-import { Logo } from '../../src/components/Logo';
 import { colors } from '../../src/theme';
+import { useT } from '../../src/i18n';
 
 export default function SignupScreen() {
   const { signUpWithEmail, error, loading } = useAuth();
+  const t = useT();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,15 +25,15 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!name || !email || !password) {
-      Alert.alert('Missing', 'Fill all fields');
+      Alert.alert(t.auth.missingTitle, t.auth.fillAllFields);
       return;
     }
     if (password !== confirm) {
-      Alert.alert('Error', "Passwords don't match");
+      Alert.alert(t.auth.errorTitle, t.auth.passwordsDontMatch);
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Error', 'Min 6 characters');
+      Alert.alert(t.auth.errorTitle, t.auth.minChars);
       return;
     }
     await signUpWithEmail(email.trim(), password, name.trim());
@@ -48,27 +49,26 @@ export default function SignupScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Logo size={64} />
-          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.title}>{t.auth.signUp}</Text>
           <Text style={styles.sub}>
-            Start your journey to a better work life
+            {t.auth.signupSubtitle}
           </Text>
         </View>
 
         <View>
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={styles.label}>{t.auth.fullName}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Your name"
+            placeholder={t.auth.namePlaceholder}
             placeholderTextColor="#555"
             value={name}
             onChangeText={setName}
           />
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t.auth.email}</Text>
           <TextInput
             style={styles.input}
-            placeholder="you@example.com"
+            placeholder={t.auth.emailPlaceholder}
             placeholderTextColor="#555"
             value={email}
             onChangeText={setEmail}
@@ -76,20 +76,20 @@ export default function SignupScreen() {
             autoCapitalize="none"
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t.auth.password}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Min 6 characters"
+            placeholder={t.auth.passwordPlaceholder}
             placeholderTextColor="#555"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
 
-          <Text style={styles.label}>Confirm Password</Text>
+          <Text style={styles.label}>{t.auth.confirmPassword}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Repeat password"
+            placeholder={t.auth.repeatPassword}
             placeholderTextColor="#555"
             value={confirm}
             onChangeText={setConfirm}
@@ -106,18 +106,18 @@ export default function SignupScreen() {
             disabled={loading}
           >
             <Text style={styles.btnText}>
-              {loading ? 'Creating...' : 'Create Account'}
+              {loading ? t.auth.signingUp : t.auth.signUp}
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Already have an account?{' '}
+            {t.auth.alreadyHaveAccount}{' '}
           </Text>
           <Link href="/(auth)/login" asChild>
             <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign In</Text>
+              <Text style={styles.footerLink}>{t.auth.signIn}</Text>
             </TouchableOpacity>
           </Link>
         </View>

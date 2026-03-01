@@ -2,12 +2,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView 
 import { useState, useEffect } from 'react';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useT } from '../../src/i18n';
 import { colors, fonts } from '../../src/theme';
 
 type ReminderVia = 'sms' | 'whatsapp' | null;
 
 export default function ProfileScreen() {
   const { profile, user, signOut, updateProfile } = useAuth();
+  const t = useT();
   const [reminderVia, setReminderVia] = useState<ReminderVia>(profile?.reminder_via ?? null);
   const [reminderPhone, setReminderPhone] = useState(profile?.reminder_phone ?? '');
   const [savingReminder, setSavingReminder] = useState(false);
@@ -21,9 +23,9 @@ export default function ProfileScreen() {
   }, [profile?.reminder_via, profile?.reminder_phone, profile?.phone]);
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: signOut },
+    Alert.alert(t.auth.signOut, t.profile.signOutConfirm, [
+      { text: t.profile.cancel, style: 'cancel' },
+      { text: t.auth.signOut, style: 'destructive', onPress: signOut },
     ]);
   };
 
@@ -31,7 +33,7 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.containerContent}>
       <Link href="/(tabs)" asChild>
         <TouchableOpacity style={styles.headerHomeLink}>
-          <Text style={styles.headerHomeLinkText}>🏠 Home</Text>
+          <Text style={styles.headerHomeLinkText}>{t.nav.home}</Text>
         </TouchableOpacity>
       </Link>
       <View style={styles.header}>
@@ -41,12 +43,12 @@ export default function ProfileScreen() {
           </Text>
         </View>
         <Text style={styles.name}>
-          {profile?.display_name || 'No name set'}
+          {profile?.display_name || t.profile.noNameSet}
         </Text>
         <Text style={styles.email}>{user?.email}</Text>
         <View style={styles.tierBadge}>
           <Text style={styles.tierText}>
-            {profile?.subscription_tier === 'pro' ? '⭐ Pro' : '🆓 Free'}
+            {profile?.subscription_tier === 'pro' ? t.profile.pro : t.profile.free}
           </Text>
         </View>
       </View>
@@ -54,50 +56,50 @@ export default function ProfileScreen() {
       <View style={styles.stats}>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{profile?.streak_count ?? 0}</Text>
-          <Text style={styles.statLabel}>Day Streak</Text>
+          <Text style={styles.statLabel}>{t.profile.dayStreak}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statValue}>
             {profile?.onboarding_completed ? '✅' : '⬜'}
           </Text>
-          <Text style={styles.statLabel}>Onboarded</Text>
+          <Text style={styles.statLabel}>{t.profile.onboarded}</Text>
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
+        <Text style={styles.sectionTitle}>{t.profile.account}</Text>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Job Title</Text>
+          <Text style={styles.infoLabel}>{t.profile.jobTitle}</Text>
           <Text style={styles.infoValue}>
-            {profile?.job_title || 'Not set'}
+            {profile?.job_title || t.profile.notSet}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Industry</Text>
+          <Text style={styles.infoLabel}>{t.profile.industry}</Text>
           <Text style={styles.infoValue}>
-            {profile?.industry || 'Not set'}
+            {profile?.industry || t.profile.notSet}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Type</Text>
+          <Text style={styles.infoLabel}>{t.profile.type}</Text>
           <Text style={styles.infoValue}>
             {profile?.graduation_type
               ? profile.graduation_type === 'college'
-                ? 'College Grad'
-                : 'High School Grad'
-              : 'Not set'}
+                ? t.profile.collegeGrad
+                : t.profile.highSchoolGrad
+              : t.profile.notSet}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Phone</Text>
-          <Text style={styles.infoValue}>{profile?.phone || 'Not set'}</Text>
+          <Text style={styles.infoLabel}>{t.profile.phone}</Text>
+          <Text style={styles.infoValue}>{profile?.phone || t.profile.notSet}</Text>
         </View>
-        <Text style={styles.phoneEditLabel}>Update phone number</Text>
+        <Text style={styles.phoneEditLabel}>{t.profile.updatePhone}</Text>
         <TextInput
           style={styles.phoneEditInput}
-          placeholder="e.g. +1 234 567 8900"
+          placeholder={t.profile.phonePlaceholder}
           placeholderTextColor={colors.textMuted}
           value={phone}
           onChangeText={setPhone}
@@ -108,21 +110,21 @@ export default function ProfileScreen() {
           onPress={() => { setSavingPhone(true); updateProfile({ phone: phone.trim() || null }).finally(() => setSavingPhone(false)); }}
           disabled={savingPhone}
         >
-          <Text style={styles.phoneSaveButtonText}>{savingPhone ? 'Saving...' : 'Save phone'}</Text>
+          <Text style={styles.phoneSaveButtonText}>{savingPhone ? t.profile.savingPhone : t.profile.savePhone}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Reminder delivery</Text>
+        <Text style={styles.sectionTitle}>{t.profile.reminderDelivery}</Text>
         <Text style={styles.reminderConsent}>
-          Can we send you reminders via text or WhatsApp? (e.g. for questions you scored 3 or below)
+          {t.profile.reminderConsent}
         </Text>
         <View style={styles.reminderOptions}>
           <TouchableOpacity
             style={[styles.reminderOption, reminderVia === null && styles.reminderOptionActive]}
             onPress={() => { setReminderVia(null); setSavingReminder(true); updateProfile({ reminder_via: null, reminder_phone: null }).finally(() => setSavingReminder(false)); }}
           >
-            <Text style={[styles.reminderOptionText, reminderVia === null && styles.reminderOptionTextActive]}>In-app only</Text>
+            <Text style={[styles.reminderOptionText, reminderVia === null && styles.reminderOptionTextActive]}>{t.profile.inAppOnly}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.reminderOption, reminderVia === 'sms' && styles.reminderOptionActive]}
@@ -139,10 +141,10 @@ export default function ProfileScreen() {
         </View>
         {(reminderVia === 'sms' || reminderVia === 'whatsapp') && (
           <>
-            <Text style={styles.reminderPhoneLabel}>Phone number</Text>
+            <Text style={styles.reminderPhoneLabel}>{t.profile.phoneNumber}</Text>
             <TextInput
               style={styles.reminderPhoneInput}
-              placeholder="e.g. +1 234 567 8900"
+              placeholder={t.profile.phonePlaceholder}
               placeholderTextColor={colors.textMuted}
               value={reminderPhone}
               onChangeText={setReminderPhone}
@@ -153,14 +155,14 @@ export default function ProfileScreen() {
               onPress={() => { setSavingReminder(true); updateProfile({ reminder_via: reminderVia, reminder_phone: reminderPhone.trim() || null }).finally(() => setSavingReminder(false)); }}
               disabled={savingReminder}
             >
-              <Text style={styles.reminderSaveButtonText}>{savingReminder ? 'Saving...' : 'Save & allow reminders'}</Text>
+              <Text style={styles.reminderSaveButtonText}>{savingReminder ? t.profile.savingReminder : t.profile.saveAllowReminders}</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
 
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutText}>Sign Out</Text>
+        <Text style={styles.signOutText}>{t.auth.signOut}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

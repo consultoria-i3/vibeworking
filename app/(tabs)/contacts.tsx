@@ -14,16 +14,18 @@ import {
   Platform,
 } from 'react-native';
 import { CONTACT_CATEGORIES, type ContactCategorySlug } from '../../src/data/contactCategories';
+import { useT } from '../../src/i18n';
 import { colors } from '../../src/theme';
+import { SectionIcon } from '../../src/components/ThreeBodyIcons';
 
 const AVERAGE_CONTACTS = 700;
 
-function getHealthLabel(pct: number): { label: string; color: string } {
-  if (pct === 0) return { label: 'Empty', color: '#666' };
-  if (pct < 40) return { label: 'Sparse', color: '#FF6B6B' };
-  if (pct < 70) return { label: 'Growing', color: '#FF9F43' };
-  if (pct <= 100) return { label: 'Healthy', color: '#48C9B0' };
-  return { label: 'Overloaded', color: '#FF6B6B' };
+function getHealthLabel(pct: number, ct: ReturnType<typeof useT>['contacts']): { label: string; color: string } {
+  if (pct === 0) return { label: ct.healthEmpty, color: '#666' };
+  if (pct < 40) return { label: ct.healthSparse, color: '#FF6B6B' };
+  if (pct < 70) return { label: ct.healthGrowing, color: '#FF9F43' };
+  if (pct <= 100) return { label: ct.healthHealthy, color: '#48C9B0' };
+  return { label: ct.healthOverloaded, color: '#FF6B6B' };
 }
 
 function getDaysLeft(lastReset: number): number {
@@ -42,9 +44,11 @@ const RINGS = CONTACT_CATEGORIES.length;
 function RadialChart({
   categoryCounts,
   totalLabel,
+  totalLabelText = 'TOTAL',
 }: {
   categoryCounts: Record<ContactCategorySlug, number>;
   totalLabel?: number;
+  totalLabelText?: string;
 }) {
   const total =
     totalLabel ??
@@ -76,7 +80,7 @@ function RadialChart({
       })}
       <View style={styles.chartCenter} pointerEvents="none">
         <Text style={styles.chartTotal}>{total}</Text>
-        <Text style={styles.chartTotalLabel}>TOTAL</Text>
+        <Text style={styles.chartTotalLabel}>{totalLabelText}</Text>
       </View>
     </View>
   );
@@ -91,6 +95,7 @@ const initialCounts = (): Record<ContactCategorySlug, number> => {
 };
 
 export default function ContactsScreen() {
+  const t = useT();
   const [counts, setCounts] = useState(initialCounts);
   const [active, setActive] = useState<ContactCategorySlug | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -143,14 +148,14 @@ export default function ContactsScreen() {
         : colors.error;
   const healthMessage =
     totalHealth === 0
-      ? 'start adding'
+      ? t.contacts.startAdding
       : totalHealth < 40
-        ? 'room to grow'
+        ? t.contacts.roomToGrow
         : totalHealth < 70
-          ? 'building up'
+          ? t.contacts.buildingUp
           : totalHealth < 90
-            ? 'well connected'
-            : 'fully networked';
+            ? t.contacts.wellConnected
+            : t.contacts.fullyNetworked;
 
   const handleAddWeekly = () => {
     const v = Math.max(0, parseInt(String(weeklyInput), 10) || 0);
@@ -165,28 +170,31 @@ export default function ContactsScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.header}>
-        <Text style={styles.brand}>MYPL.AI · RELATIONSHIP INTELLIGENCE</Text>
-        <Text style={styles.title}>Circle of Contacts</Text>
+        <Text style={styles.brand}>{t.contacts.brand}</Text>
+        <Text style={styles.title}>{t.contacts.circleTitle}</Text>
         <Text style={styles.subtitle}>
-          More relationships. More everything.
+          {t.contacts.subtitle}
         </Text>
       </View>
 
       <View style={styles.twoCol}>
         <View style={styles.leftCol}>
           <View style={{ opacity: mounted ? 1 : 0 }}>
-            <RadialChart categoryCounts={counts} totalLabel={myContacts} />
+            <RadialChart categoryCounts={counts} totalLabel={myContacts} totalLabelText={t.contacts.total} />
           </View>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statLabel}>MY CONTACTS</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <SectionIcon iconId="blueprint" size={20} />
+                <Text style={styles.statLabel}>{t.contacts.myContacts}</Text>
+              </View>
               <Text style={styles.statValue}>{myContacts}</Text>
               <Text style={styles.statSub}>
-                {myContacts === 1 ? 'contact' : 'contacts'}
+                {myContacts === 1 ? t.contacts.contact : t.contacts.contactsPlural}
               </Text>
             </View>
             <View style={[styles.statBox, { borderColor: healthColor + '44' }]}>
-              <Text style={styles.statLabel}>HEALTH</Text>
+              <Text style={styles.statLabel}>{t.contacts.health}</Text>
               <Text style={[styles.statValue, { color: healthColor }]}>
                 {totalHealth}
                 <Text style={styles.healthPct}>%</Text>
@@ -204,7 +212,10 @@ export default function ContactsScreen() {
                 },
               ]}
             >
-              <Text style={styles.statLabel}>YOUR CONTACTS</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <SectionIcon iconId="blueprint" size={20} />
+                <Text style={styles.statLabel}>{t.contacts.yourContacts}</Text>
+              </View>
               <Text
                 style={[
                   styles.statValue,
@@ -216,26 +227,26 @@ export default function ContactsScreen() {
               </Text>
               <Text style={styles.statSub}>
                 {aboveAverage
-                  ? `${myContacts - AVERAGE_CONTACTS} above avg`
-                  : `avg is ${AVERAGE_CONTACTS}`}
+                  ? `${myContacts - AVERAGE_CONTACTS} ${t.contacts.aboveAvg}`
+                  : `${t.contacts.avgIs} ${AVERAGE_CONTACTS}`}
               </Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statLabel}>AVERAGE PERSON</Text>
+              <Text style={styles.statLabel}>{t.contacts.averagePerson}</Text>
               <Text style={[styles.statValue, { color: colors.textMuted }]}>
                 {AVERAGE_CONTACTS}
               </Text>
-              <Text style={styles.statSub}>contacts worldwide</Text>
+              <Text style={styles.statSub}>{t.contacts.contactsWorldwide}</Text>
             </View>
           </View>
           <View style={styles.weeklyCard}>
             <View style={styles.weeklyHeader}>
-              <Text style={styles.weeklyLabel}>NEW PEOPLE THIS WEEK</Text>
-              <Text style={styles.weeklyDaysLeft}>🔄 resets in {daysLeft}d</Text>
+              <Text style={styles.weeklyLabel}>{t.contacts.newPeopleThisWeek}</Text>
+              <Text style={styles.weeklyDaysLeft}>🔄 {t.contacts.resetsIn} {daysLeft}d</Text>
             </View>
             <View style={styles.weeklyTotalWrap}>
               <Text style={styles.weeklyTotal}>{newThisWeek}</Text>
-              <Text style={styles.weeklyTotalSub}>this week</Text>
+              <Text style={styles.weeklyTotalSub}>{t.contacts.thisWeek}</Text>
             </View>
             <View style={styles.weeklyInputRow}>
               <TextInput
@@ -251,7 +262,7 @@ export default function ContactsScreen() {
                 style={styles.weeklyAddBtn}
                 onPress={handleAddWeekly}
               >
-                <Text style={styles.weeklyAddBtnText}>+ ADD</Text>
+                <Text style={styles.weeklyAddBtnText}>{t.contacts.add}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -280,7 +291,7 @@ export default function ContactsScreen() {
           {CONTACT_CATEGORIES.map((cat, i) => {
             const count = counts[cat.slug] ?? 0;
             const pct = Math.min((count / cat.capacity) * 100, 100);
-            const health = getHealthLabel(pct);
+            const health = getHealthLabel(pct, t.contacts);
             const isActive = active === cat.slug;
 
             return (
@@ -308,7 +319,7 @@ export default function ContactsScreen() {
                     <Text style={[styles.healthTag, { color: health.color }]}>
                       {health.label}
                     </Text>
-                    <Text style={styles.capLabel}>cap. {cat.capacity}</Text>
+                    <Text style={styles.capLabel}>{t.contacts.cap} {cat.capacity}</Text>
                   </View>
                 </View>
                 <View style={styles.progressTrack}>
@@ -371,14 +382,14 @@ export default function ContactsScreen() {
               setWeeklyInput(0);
             }}
           >
-            <Text style={styles.resetBtnText}>RESET ALL</Text>
+            <Text style={styles.resetBtnText}>{t.contacts.resetAll}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          BASED ON DUNBAR'S SOCIAL BRAIN HYPOTHESIS · MORE RELATIONSHIPS. MORE EVERYTHING.
+          {t.contacts.footer}
         </Text>
       </View>
     </ScrollView>

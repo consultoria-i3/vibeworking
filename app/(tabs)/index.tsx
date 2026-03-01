@@ -22,18 +22,18 @@ import {
   getSliderColor,
   getSliderLabel,
   getFiresideSliderLabel,
-  FIRESIDE_OPTION_LABELS,
   FIRESIDE_OPTION_EMOJIS,
   getDisplayQuestion,
-  RELATIONSHIP_LABELS,
+  getRelationshipLabels,
+  getLocalizedQuestion,
+  getFiresideOptionLabels,
   LOW_SCORE_THRESHOLD,
   type CheckinQuestionData,
 } from '../../src/data/checkinQuestions';
-import { Logo } from '../../src/components/Logo';
 import { SectionIcon } from '../../src/components/ThreeBodyIcons';
 import { colors, fonts } from '../../src/theme';
 import { CATEGORY_COLORS, LIGHT_PURPLE } from '../../src/constants/categories';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getSupabaseOrNull } from '../../src/lib/supabase';
 import {
   getGuidelines,
@@ -44,21 +44,29 @@ import {
 } from '../../src/services/showMe';
 
 import type { SectionIconId } from '../../src/types/sectionIcon';
+import { useT, getT, getLocale } from '../../src/i18n';
 
-const CATEGORIES = [
-  { emoji: '👔', icon: 'app' as SectionIconId, title: 'Boss', desc: 'How can I save you time? Get there early, stay late.', route: '/(tabs)/coaching', slug: 'boss' },
-  { emoji: '🤝', icon: 'figure8' as SectionIconId, title: 'Teammates', desc: 'Please & Thank you. Do what you say. Finish what you start. Ask for advice often.', route: '/(tabs)/coaching', slug: 'teammates' },
-  { emoji: '🎓', icon: 'chaotic' as SectionIconId, title: 'Classmates', desc: 'Casual favors machine!', route: '/(tabs)/coaching', slug: 'classmates' },
-  { emoji: '🔺', icon: 'triangle' as SectionIconId, title: 'I think we could be friends', desc: 'Remind myself when I sit beside someone, make a queue, or get introduced', route: '/(tabs)/coaching', slug: 'triangulation' },
-];
+function getCategories() {
+  const t = getT();
+  return [
+    { emoji: '👔', icon: 'blueprint' as SectionIconId, title: t.home.categories.boss.title, desc: t.home.categories.boss.desc, route: '/(tabs)/coaching', slug: 'boss' },
+    { emoji: '🤝', icon: 'figure8' as SectionIconId, title: t.home.categories.teammates.title, desc: t.home.categories.teammates.desc, route: '/(tabs)/coaching', slug: 'teammates' },
+    { emoji: '🎓', icon: 'chaotic' as SectionIconId, title: t.home.categories.classmates.title, desc: t.home.categories.classmates.desc, route: '/(tabs)/coaching', slug: 'classmates' },
+  ];
+}
 
 /** Fireside: same section-card design as others when selected; Start opens check-in */
-const FIRESIDE_SECTION = { emoji: '🔥', icon: 'orbital' as SectionIconId, title: 'Fireside', desc: "Let's see your outplai." } as const;
-/** Minetoo: title + description only in selector; in main window shows Start → chat (ChatGPT-style) */
-const MINETOO_SECTION = { emoji: '👥', icon: 'suns' as SectionIconId, title: 'Your contacts, my contacts', desc: 'Estimate yours and see your reach.' } as const;
+function getFiresideSection() {
+  const t = getT();
+  return { emoji: '🔥', icon: 'orbital' as SectionIconId, title: t.home.firesideTitle, desc: t.home.firesideDesc };
+}
+function getMinetooSection() {
+  const t = getT();
+  return { emoji: '👥', icon: 'blueprint' as SectionIconId, title: t.home.minetooTitle, desc: t.home.minetooDesc };
+}
 
 /** Third word for dynamic tagline "Outplai yourself [word]." — one picked randomly per session */
-const TAGLINE_THIRD_WORDS = [
+const TAGLINE_THIRD_WORDS_EN = [
   'daily', 'better', 'again', 'boldly', 'bravely', 'wisely', 'faster', 'smarter', 'stronger', 'harder',
   'higher', 'further', 'louder', 'sharper', 'deeper', 'greater', 'bigger', 'calmer', 'clearer', 'brighter',
   'bolder', 'fiercer', 'prouder', 'humbler', 'kinder', 'quicker', 'sooner', 'later', 'always', 'forever',
@@ -70,6 +78,24 @@ const TAGLINE_THIRD_WORDS = [
   'enthusiastically', 'fiercely', 'freely', 'generously', 'heroically', 'honestly', 'intelligently', 'intuitively', 'masterfully', 'optimally',
   'proactively', 'resiliently', 'skillfully', 'triumphantly', 'unapologetically', 'victoriously', 'wildly',
 ];
+
+/** Spanish tagline words for "Relaciónate más, vas por más [word]." */
+const TAGLINE_THIRD_WORDS_ES = [
+  'a diario', 'mejor', 'otra vez', 'con ganas', 'con valor', 'con cabeza', 'más rápido', 'más listo', 'más fuerte', 'más duro',
+  'más alto', 'más lejos', 'más fuerte', 'más claro', 'más profundo', 'en grande', 'más grande', 'más tranquilo', 'más claro', 'más brillante',
+  'más audaz', 'más feroz', 'con orgullo', 'con humildad', 'con amabilidad', 'más ágil', 'más pronto', 'después', 'siempre', 'por siempre',
+  'ahora', 'hoy', 'mañana', 'con constancia', 'sin parar', 'sin miedo', 'con confianza', 'con creatividad', 'con estrategia', 'con intención',
+  'con atención', 'con propósito', 'con pasión', 'con paciencia', 'con persistencia', 'con coraje', 'con decisión', 'con gracia', 'sin esfuerzo', 'con efectividad',
+  'con eficiencia', 'sin pausa', 'constantemente', 'completamente', 'totalmente', 'al máximo', 'por completo', 'absolutamente', 'sin duda', 'notablemente',
+  'excepcionalmente', 'tremendamente', 'drásticamente', 'significativamente', 'en serio', 'como se debe', 'correctamente', 'con precisión', 'con exactitud', 'a la perfección',
+  'diferente', 'de forma única', 'por tu cuenta', 'competitivamente', 'con agresividad', 'con ambición', 'con autenticidad', 'brillantemente', 'dinámicamente', 'con energía',
+  'con entusiasmo', 'con fiereza', 'libremente', 'con generosidad', 'heroicamente', 'con honestidad', 'inteligentemente', 'intuitivamente', 'magistralmente', 'de forma óptima',
+  'proactivamente', 'con resiliencia', 'con habilidad', 'triunfalmente', 'sin disculpas', 'victoriosamente', 'salvajemente',
+];
+
+function getTaglineWords(): string[] {
+  return getLocale() === 'es' ? TAGLINE_THIRD_WORDS_ES : TAGLINE_THIRD_WORDS_EN;
+}
 
 /** Range options for contact estimates: [min, max], midpoint used for total; displayLabel shows ~max */
 const CONTACT_RANGES = [
@@ -84,7 +110,7 @@ const CONTACT_RANGES = [
   { label: '700–900', displayLabel: '~900', midpoint: 800 },
 ] as const;
 
-const CONTACT_ESTIMATE_MULTIPLIER = 250; // 250 reachable contacts
+const CONTACT_ESTIMATE_MULTIPLIER = 10; // multiply total contacts for rough reach
 
 /** Family members that work: only 30, 60, 90 */
 const CONTACT_FAMILY_OPTIONS = [
@@ -102,14 +128,14 @@ const CONTACT_COLLEAGUES_OPTIONS = [
   { displayLabel: '~250', midpoint: 250 },
 ] as const;
 
-/** People you recognize, were friends with, say Hi, know your name: 50, 100, 150, 250, 300 */
-const CONTACT_RECOGNIZE_OPTIONS = [
-  { displayLabel: '~50', midpoint: 50 },
-  { displayLabel: '~100', midpoint: 100 },
-  { displayLabel: '~150', midpoint: 150 },
-  { displayLabel: '~250', midpoint: 250 },
-  { displayLabel: '~300', midpoint: 300 },
-] as const;
+function getMinetooSteps() {
+  const t = getT();
+  return [
+    { title: t.home.minetooFamily, subtitle: t.home.minetooFamilySub, options: CONTACT_FAMILY_OPTIONS },
+    { title: t.home.minetooClosestFriends, subtitle: t.home.minetooClosestFriendsSub, options: CONTACT_COLLEAGUES_OPTIONS },
+    { title: t.home.minetooColleagues, subtitle: t.home.minetooColleaguesSub, options: CONTACT_COLLEAGUES_OPTIONS },
+  ];
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -117,6 +143,11 @@ export default function HomeScreen() {
   const { todayCount, canCheckin, isComplete, loading, submitCheckin, refresh } = useCheckin(user?.id);
   const { reminders, refresh: refreshReminders } = useReminders(user?.id);
   const { averages: categoryAverages, refresh: refreshCategoryAverages } = useCategoryAverages(user?.id);
+  const t = useT();
+  const categories = getCategories();
+  const FIRESIDE_SECTION = getFiresideSection();
+  const MINETOO_SECTION = getMinetooSection();
+  const MINETOO_STEPS = getMinetooSteps();
 
   const [questions, setQuestions] = useState<CheckinQuestionData[]>(() => getQuestionsForRotation(3));
   const [step, setStep] = useState(0);
@@ -143,8 +174,6 @@ export default function HomeScreen() {
   const [startFiresideHovered, setStartFiresideHovered] = useState(false);
   /** After first 3 questions: show subsections + "New fireside?" then start second round. */
   const [showFiresideSummary, setShowFiresideSummary] = useState(false);
-  /** Averages from first fireside round; used for subsection colors and for section label colors in round 2. */
-  const [firstFiresideAverages, setFirstFiresideAverages] = useState<{ boss: number | null; teammates: number | null; classmates: number | null } | null>(null);
   const [firesideRound, setFiresideRound] = useState<1 | 2>(1);
   const firesideRoundRef = useRef(1);
   /** When user taps "You are outplaying!" or "Use the tips!" we highlight the tip section */
@@ -153,33 +182,35 @@ export default function HomeScreen() {
   const [contactsFamily, setContactsFamily] = useState<number | null>(null);
   const [contactsClosestFriends, setContactsClosestFriends] = useState<number | null>(null);
   const [contactsColleagues, setContactsColleagues] = useState<number | null>(null);
-  const [contactsRecognize, setContactsRecognize] = useState<number | null>(null);
   /** Section shown in the main content area (where Fireside lives). No navigation — content swaps in place. */
-  const [activeSection, setActiveSection] = useState<'fireside' | 'boss' | 'teammates' | 'classmates' | 'triangulation' | 'minetoo'>('fireside');
+  const [activeSection, setActiveSection] = useState<'boss' | 'teammates' | 'classmates' | 'minetoo'>('boss');
   /** When user clicked Start on Fireside section card, show check-in (same graphic design as other sections first) */
   const [firesideSectionStarted, setFiresideSectionStarted] = useState(false);
-  /** When user clicks Start on any section, open chat (greeting + thread + input) */
+  /** When user clicks Start on any section, open chat (greeting + thread + input). For Minetoo, opens step-by-step flow instead. */
   const [sectionChatStarted, setSectionChatStarted] = useState<typeof activeSection | null>(null);
+  /** Minetoo: 0=Family, 1=Closest friends, 2=Colleagues, 3=Total */
+  const [minetooFlowStep, setMinetooFlowStep] = useState<0 | 1 | 2 | 3>(0);
   const [sectionChatReplies, setSectionChatReplies] = useState<{ role: 'user' | 'assistant'; text: string }[]>([]);
   const [sectionChatInput, setSectionChatInput] = useState('');
   /** Tagline third word: "Outplai yourself [taglineWord]." — random per session */
-  const [taglineWord] = useState(() => TAGLINE_THIRD_WORDS[Math.floor(Math.random() * TAGLINE_THIRD_WORDS.length)]);
+  const [taglineWord] = useState(() => {
+    const words = getTaglineWords();
+    return words[Math.floor(Math.random() * words.length)];
+  });
   const scrollRef = useRef<ScrollView>(null);
   const setActiveSectionAndScroll = (section: typeof activeSection) => {
     setActiveSection(section);
-    if (section !== 'fireside') {
-      setFiresideSectionStarted(false);
-      setFiresideStarted(false);
-    }
+    setFiresideSectionStarted(false);
+    setFiresideStarted(false);
     setSectionChatStarted(null);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
   const handleSectionChatSend = () => {
-    const t = sectionChatInput.trim();
-    if (!t) return;
-    setSectionChatReplies((prev) => [...prev, { role: 'user', text: t }]);
+    const msg = sectionChatInput.trim();
+    if (!msg) return;
+    setSectionChatReplies((prev) => [...prev, { role: 'user', text: msg }]);
     setSectionChatInput('');
-    setSectionChatReplies((prev) => [...prev, { role: 'assistant', text: "I'm here to help. (More coming soon.)" }]);
+    setSectionChatReplies((prev) => [...prev, { role: 'assistant', text: t.home.chatReplyDefault }]);
   };
   useEffect(() => {
     firesideRoundRef.current = firesideRound;
@@ -247,23 +278,12 @@ export default function HomeScreen() {
     });
     setShowResult(false);
     if (step >= questions.length - 1) {
-      if (firesideRound === 1) {
-        const byCat: Record<string, number[]> = { boss: [], teammates: [], classmates: [] };
-        answers.forEach((a, i) => {
-          if (a.skipped || i === step) return; // current step is being skipped
-          const q = questions[i];
-          if (q?.relationshipCategory && byCat[q.relationshipCategory]) byCat[q.relationshipCategory].push(a.value);
-        });
-        const avg = (arr: number[]) => (arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : null);
-        setFirstFiresideAverages({
-          boss: avg(byCat.boss),
-          teammates: avg(byCat.teammates),
-          classmates: avg(byCat.classmates),
-        });
+      if (questions.length === 9 && user) {
+        handleSubmit();
+      } else if (firesideRound === 1 || !user) {
         setShowFiresideSummary(true);
       } else {
-        if (!user) setShowSignupForm(true);
-        else handleSubmit();
+        handleSubmit();
       }
     } else {
       setStep((s) => s + 1);
@@ -273,26 +293,12 @@ export default function HomeScreen() {
   const handleNext = () => {
     if (showResult) {
       if (isLastQuestion) {
-        if (firesideRound === 1) {
-          const byCat: Record<string, number[]> = { boss: [], teammates: [], classmates: [] };
-          answers.forEach((a, i) => {
-            if (a.skipped) return;
-            const q = questions[i];
-            if (q?.relationshipCategory && byCat[q.relationshipCategory]) byCat[q.relationshipCategory].push(a.value);
-          });
-          const avg = (arr: number[]) => (arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : null);
-          setFirstFiresideAverages({
-            boss: avg(byCat.boss),
-            teammates: avg(byCat.teammates),
-            classmates: avg(byCat.classmates),
-          });
+        if (questions.length === 9 && user) {
+          handleSubmit();
+        } else if (firesideRound === 1 || !user) {
           setShowFiresideSummary(true);
         } else {
-          if (user) {
-            handleSubmit();
-          } else {
-            setShowSignupForm(true);
-          }
+          handleSubmit();
         }
       } else {
         setShowResult(false);
@@ -450,15 +456,15 @@ export default function HomeScreen() {
 
   const handleVisitorSignup = async () => {
     if (!signupName || !signupEmail || !signupPassword) {
-      Alert.alert('Missing', 'Fill all fields');
+      Alert.alert(t.auth.missingTitle, t.auth.fillAllFields);
       return;
     }
     if (signupPassword !== signupConfirm) {
-      Alert.alert('Error', "Passwords don't match");
+      Alert.alert(t.auth.errorTitle, t.auth.passwordsDontMatch);
       return;
     }
     if (signupPassword.length < 6) {
-      Alert.alert('Error', 'Min 6 characters');
+      Alert.alert(t.auth.errorTitle, t.auth.minChars);
       return;
     }
     const supabase = getSupabaseOrNull();
@@ -487,7 +493,7 @@ export default function HomeScreen() {
     if (!firesideStarted) {
       return (
         <View style={styles.firesideStartCard}>
-          <Text style={styles.firesideHeadline}>Fireside?</Text>
+          <Text style={styles.firesideHeadline}>{t.home.firesideQuestion}</Text>
           <TouchableOpacity
             style={[
               styles.startFiresideButton,
@@ -497,13 +503,12 @@ export default function HomeScreen() {
               setFiresideStarted(true);
               setAnswers(questions.map(() => ({ value: 0, detailText: '', skipped: false })));
             }}
-            onMouseEnter={() => setStartFiresideHovered(true)}
-            onMouseLeave={() => setStartFiresideHovered(false)}
+            {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
           >
             <Text style={[
               styles.startFiresideButtonText,
               startFiresideHovered && styles.startFiresideButtonTextHover,
-            ]}>Start</Text>
+            ]}>{t.home.start}</Text>
           </TouchableOpacity>
         </View>
       );
@@ -517,39 +522,39 @@ export default function HomeScreen() {
         >
           <View style={styles.sliderCard}>
             <Text style={styles.signupHeadline}>
-              Save your play.
+              {t.home.signupSavePlay}
             </Text>
-            <Text style={styles.fieldLabel}>Full Name</Text>
+            <Text style={styles.fieldLabel}>{t.home.signupFullName}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Your name"
+              placeholder={t.home.signupNamePlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupName}
               onChangeText={setSignupName}
             />
-            <Text style={styles.fieldLabel}>Email</Text>
+            <Text style={styles.fieldLabel}>{t.home.signupEmail}</Text>
             <TextInput
               style={styles.input}
-              placeholder="you@example.com"
+              placeholder={t.home.signupEmailPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupEmail}
               onChangeText={setSignupEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={styles.fieldLabel}>Password</Text>
+            <Text style={styles.fieldLabel}>{t.home.signupPassword}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Min 6 characters"
+              placeholder={t.home.signupPasswordPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupPassword}
               onChangeText={setSignupPassword}
               secureTextEntry
             />
-            <Text style={styles.fieldLabel}>Confirm Password</Text>
+            <Text style={styles.fieldLabel}>{t.home.signupConfirmPassword}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Repeat password"
+              placeholder={t.home.signupRepeatPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupConfirm}
               onChangeText={setSignupConfirm}
@@ -563,7 +568,7 @@ export default function HomeScreen() {
                 disabled={submitting}
               >
                 <Text style={styles.primaryButtonText}>
-                  {submitting ? 'Creating...' : 'Save my answers'}
+                  {submitting ? t.home.signupCreating : t.home.signupSaveAnswers}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -572,49 +577,70 @@ export default function HomeScreen() {
       );
     }
 
-    if (showFiresideSummary && firstFiresideAverages) {
-      const subsections = [
-        { key: 'boss' as const, label: RELATIONSHIP_LABELS.boss },
-        { key: 'teammates' as const, label: RELATIONSHIP_LABELS.teammates },
-        { key: 'classmates' as const, label: RELATIONSHIP_LABELS.classmates },
-      ];
+    if (showFiresideSummary) {
+      const answeredPairs = questions
+        .map((q, i) => ({ q, a: answers[i] }))
+        .filter(({ a }) => a && !a.skipped && (a.value ?? 0) >= 1);
       return (
         <>
           <View style={styles.sliderCard}>
-            <Text style={styles.firesideHeadline}>Fireside?</Text>
+            <Text style={styles.firesideHeadline}>{t.home.firesideQuestion}</Text>
             <View style={styles.firesideSummarySubsections}>
-              {subsections.map(({ key, label }) => {
-                const avg = firstFiresideAverages[key];
-                const isGood = avg != null && avg >= 3;
-                const bgColor = avg != null
-                  ? (isGood ? 'rgba(34, 197, 94, 0.25)' : 'rgba(220, 38, 38, 0.25)')
-                  : '#f0f0f0';
-                const borderColor = avg != null ? (isGood ? '#22C55E' : '#DC2626') : colors.cardBorder;
-                const labelColor = avg != null ? (isGood ? '#22C55E' : '#DC2626') : colors.text;
+              {answeredPairs.map(({ q, a }, idx) => {
+                const isGood = a!.value! >= 3;
+                const bgColor = isGood ? 'rgba(34, 197, 94, 0.25)' : 'rgba(220, 38, 38, 0.25)';
+                const borderColor = isGood ? '#22C55E' : '#DC2626';
+                const labelColor = isGood ? '#22C55E' : '#DC2626';
                 return (
-                  <View key={key} style={[styles.firesideSummarySubsection, { backgroundColor: bgColor, borderWidth: 1, borderColor }]}>
-                    <Text style={[styles.firesideSummarySubsectionLabel, { color: labelColor }]}>{label}</Text>
+                  <View key={`${q.id}-${idx}`} style={[styles.firesideSummarySubsection, { backgroundColor: bgColor, borderWidth: 1, borderColor }]}>
+                    <Text style={[styles.firesideSummarySubsectionLabel, { color: labelColor }]}>{getRelationshipLabels()[q.relationshipCategory]}</Text>
                   </View>
                 );
               })}
             </View>
-            <Text style={styles.firesideNewFiresideText}>New fireside?</Text>
-            <TouchableOpacity
-              style={[styles.startFiresideButton, startFiresideHovered && styles.startFiresideButtonHover]}
-              onPress={() => {
-                const nextQ = getQuestionsForRotation(3);
-                setQuestions(nextQ);
-                setAnswers(nextQ.map(() => ({ value: 0, detailText: '', skipped: false })));
-                setStep(0);
-                setShowResult(false);
-                setShowFiresideSummary(false);
-                setFiresideRound(2);
-              }}
-              onMouseEnter={() => setStartFiresideHovered(true)}
-              onMouseLeave={() => setStartFiresideHovered(false)}
-            >
-              <Text style={[styles.startFiresideButtonText, startFiresideHovered && styles.startFiresideButtonTextHover]}>Start</Text>
-            </TouchableOpacity>
+            <View style={styles.firesideSummaryAnswersList}>
+              {answeredPairs.map(({ q, a }) => {
+                const label = getFiresideSliderLabel(a!.value!);
+                const isGood = a!.value! >= 3;
+                const answerColor = isGood ? '#22C55E' : '#DC2626';
+                return (
+                  <View key={q.id} style={styles.firesideSummaryAnswerCard}>
+                    <Text style={styles.firesideSummaryAnswerQuestion}>{getDisplayQuestion(q)}</Text>
+                    <Text style={[styles.firesideSummaryAnswerLabel, { color: answerColor }]}>{label}</Text>
+                  </View>
+                );
+              })}
+            </View>
+            <Text style={styles.firesideNewFiresideText}>{t.home.newFireside}</Text>
+            {questions.length < 9 ? (
+              <TouchableOpacity
+                style={[styles.startFiresideButton, startFiresideHovered && styles.startFiresideButtonHover, { marginBottom: 8 }]}
+                onPress={() => {
+                  const pool = getQuestionsForRotation(9);
+                  const existingIds = new Set(questions.map((q) => q.id));
+                  const nextQ = pool.filter((q) => !existingIds.has(q.id)).slice(0, 3);
+                  if (nextQ.length === 0) return;
+                  setQuestions((prev) => [...prev, ...nextQ]);
+                  setAnswers((prev) => [...prev, ...nextQ.map(() => ({ value: 0, detailText: '', skipped: false }))]);
+                  setStep(questions.length);
+                  setShowResult(false);
+                  setShowFiresideSummary(false);
+                  setFiresideRound(2);
+                }}
+                {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
+              >
+                <Text style={[styles.startFiresideButtonText, startFiresideHovered && styles.startFiresideButtonTextHover]}>{t.home.try3More}</Text>
+              </TouchableOpacity>
+            ) : null}
+            {!user ? (
+              <TouchableOpacity
+                style={[styles.saveYourAnswersButton, { marginTop: 12 }]}
+                onPress={() => setShowSignupForm(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.saveYourAnswersButtonText}>{t.home.saveYourAnswers}</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </>
       );
@@ -622,19 +648,17 @@ export default function HomeScreen() {
 
     return (
       <>
-        <Text style={styles.firesideHeadline}>Fireside?</Text>
+        <Text style={styles.firesideHeadline}>{t.home.firesideQuestion}</Text>
         <View style={styles.sliderCard}>
         <Text
           style={[
             styles.relationshipLabel,
-            firesideRound === 2 && currentQ && firstFiresideAverages != null && firstFiresideAverages[currentQ.relationshipCategory] != null
-              ? { color: getSliderColor(firstFiresideAverages[currentQ.relationshipCategory]!) }
-              : (currentAnswer?.value ?? 0) >= 1
-                ? { color: (currentAnswer!.value >= 3 ? '#22C55E' : '#DC2626') }
-                : undefined,
+            (currentAnswer?.value ?? 0) >= 1
+              ? { color: (currentAnswer!.value >= 3 ? '#22C55E' : '#DC2626') }
+              : undefined,
           ]}
         >
-          {currentQ && RELATIONSHIP_LABELS[currentQ.relationshipCategory]}
+          {currentQ && getRelationshipLabels()[currentQ.relationshipCategory]}
         </Text>
 
         {!showResult ? (
@@ -649,19 +673,19 @@ export default function HomeScreen() {
                 >
                   {currentQ ? getDisplayQuestion(currentQ) : ''}
                 </Text>
-                {currentQ?.example ? (
+                {currentQ && getLocalizedQuestion(currentQ).example ? (
                   <Text
                     style={[
                       styles.questionExample,
                       (currentAnswer?.value ?? 0) >= 1 && { color: (currentAnswer!.value >= 3 ? '#22C55E' : '#DC2626') },
                     ]}
                   >
-                    {currentQ.example}
+                    {getLocalizedQuestion(currentQ).example}
                   </Text>
                 ) : null}
                 <View style={styles.firesideSliderBlock}>
                   <View style={styles.firesideLabelsOverLine}>
-                    {FIRESIDE_OPTION_LABELS.map((label, i) => (
+                    {getFiresideOptionLabels().map((label, i) => (
                       <TouchableOpacity
                         key={i}
                         onPress={() => handleScoreChange(i + 1)}
@@ -700,31 +724,31 @@ export default function HomeScreen() {
               ]}>
               {firesideUnset ? (
                 <>
-                  <Text style={styles.yourPlayLabel}>😊 No score selected</Text>
-                  <Text style={styles.resultText}>Slide to pick 1–4, then tap Continue.</Text>
+                  <Text style={styles.yourPlayLabel}>{t.home.noScoreSelected}</Text>
+                  <Text style={styles.resultText}>{t.home.slideToSelect}</Text>
                   <TouchableOpacity
                     style={styles.backToSelectButton}
                     onPress={() => { setShowResult(false); setResultTipHighlight(false); }}
                   >
-                    <Text style={styles.backToSelectButtonText}>Back to select</Text>
+                    <Text style={styles.backToSelectButtonText}>{t.home.backToSelect}</Text>
                   </TouchableOpacity>
                 </>
               ) : (
                 <>
-                  <Text style={styles.yourPlayLabel}>😊 Your play: {currentAnswer?.value} — <Text style={{ color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }}>{getFiresideSliderLabel(currentAnswer?.value ?? 1)}</Text></Text>
-                  <Text style={[styles.resultTitle, { color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>{(currentAnswer?.value ?? 1) >= 3 ? '✨ Atta way!' : 'Aww…'}</Text>
-                  <Text style={[styles.resultText, { marginBottom: 6 }]}>Got it!</Text>
+                  <Text style={styles.yourPlayLabel}>{t.home.yourPlayScore(currentAnswer?.value ?? 1, getFiresideSliderLabel(currentAnswer?.value ?? 1))}<Text style={{ color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }}>{getFiresideSliderLabel(currentAnswer?.value ?? 1)}</Text></Text>
+                  <Text style={[styles.resultTitle, { color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>{(currentAnswer?.value ?? 1) >= 3 ? t.home.attaWay : t.home.aww}</Text>
+                  <Text style={[styles.resultText, { marginBottom: 6 }]}>{t.home.gotIt}</Text>
                   {(currentAnswer?.value ?? 1) >= 3 ? (
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={() => { setResultTipHighlight(true); setTimeout(() => setResultTipHighlight(false), 2500); }}
                     >
                       <Text style={styles.resultText}>
-                        You are outplaying!{' '}
+                        {t.home.youAreOutplaying}{' '}
                         <Text style={[styles.resultText, { fontWeight: '600', color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>
                           {getFiresideSliderLabel(currentAnswer?.value ?? 1)}
                         </Text>
-                        . Tap to see tip below.
+                        {t.home.tapToSeeTip}
                       </Text>
                     </TouchableOpacity>
                   ) : (
@@ -733,14 +757,14 @@ export default function HomeScreen() {
                       onPress={() => { setResultTipHighlight(true); setTimeout(() => setResultTipHighlight(false), 2500); }}
                     >
                       <Text style={styles.resultText}>
-                        Use the tips! It will play out! Tap to see tip below.
+                        {t.home.useTheTips}
                       </Text>
                     </TouchableOpacity>
                   )}
                   {currentQ?.advice ? (
                     <View style={[styles.resultTipBlock, resultTipHighlight && styles.resultTipBlockHighlight]}>
-                      <Text style={[styles.resultTitle, { color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>💡 Tip</Text>
-                      <Text style={[styles.resultText, { color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>{currentQ.advice}</Text>
+                      <Text style={[styles.resultTitle, { color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>{t.home.tipLabel}</Text>
+                      <Text style={[styles.resultText, { color: (currentAnswer?.value ?? 1) >= 3 ? '#22C55E' : '#DC2626' }]}>{getLocalizedQuestion(currentQ).advice}</Text>
                     </View>
                   ) : null}
                 </>
@@ -754,7 +778,7 @@ export default function HomeScreen() {
         <View style={styles.checkinButtonRow}>
           {!showResult ? (
             <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-              <Text style={styles.skipButtonText}>Skip</Text>
+              <Text style={styles.skipButtonText}>{t.checkin.skip}</Text>
             </TouchableOpacity>
           ) : null}
           {user ? (
@@ -763,7 +787,7 @@ export default function HomeScreen() {
               onPress={handleSubmit}
               disabled={submitting}
             >
-              <Text style={styles.doneButtonText}>{submitting ? 'Saving...' : 'Done'}</Text>
+              <Text style={styles.doneButtonText}>{submitting ? t.checkin.saving : t.checkin.done}</Text>
             </TouchableOpacity>
           ) : null}
           <TouchableOpacity
@@ -773,15 +797,38 @@ export default function HomeScreen() {
           >
             <Text style={styles.primaryButtonText}>
               {submitting
-                ? 'Saving...'
+                ? t.checkin.saving
                 : showResult && isLastQuestion
-                ? (user ? 'Next' : 'Done')
+                ? (user ? t.checkin.next : t.checkin.done)
                 : showResult
-                ? 'Next'
-                : 'Continue'}
+                ? t.checkin.next
+                : t.checkin.continue}
             </Text>
           </TouchableOpacity>
         </View>
+        {showResult && isLastQuestion && questions.length === 6 ? (
+          <TouchableOpacity
+            style={[styles.startFiresideButton, { marginTop: 12 }]}
+            onPress={() => {
+              const pool = getQuestionsForRotation(9);
+              const existingIds = new Set(questions.map((q) => q.id));
+              const nextQ = pool.filter((q) => !existingIds.has(q.id)).slice(0, 3);
+              if (nextQ.length === 0) return;
+              setQuestions((prev) => [...prev, ...nextQ]);
+              setAnswers((prev) => [...prev, ...nextQ.map(() => ({ value: 0, detailText: '', skipped: false }))]);
+              setStep(questions.length);
+              setShowResult(false);
+              setFiresideRound(2);
+            }}
+          >
+            <Text style={styles.startFiresideButtonText}>{t.home.try3More}</Text>
+          </TouchableOpacity>
+        ) : null}
+        {!user && showResult && isLastQuestion && questions.length === 9 ? (
+          <TouchableOpacity style={styles.saveMyAnswersLinkWrap} onPress={() => setShowSignupForm(true)} activeOpacity={0.7}>
+            <Text style={styles.saveMyAnswersLink}>{t.checkin.saveMyAnswers}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
       </>
     );
@@ -793,46 +840,85 @@ export default function HomeScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator>
-          {/* Logo and tagline at top left */}
+          {/* Tagline at top left */}
           <View style={styles.topLogo}>
-          <Logo size={40} />
           <View style={styles.topTaglineWrap}>
-              <Text style={styles.topTagline}>Outpla<Text style={[styles.topTagline, { color: '#FF52A0', fontStyle: 'italic' }]}>i</Text> yourself {taglineWord}.</Text>
+              <Text style={styles.topTagline}>{t.home.tagline(taglineWord)}</Text>
             </View>
         </View>
 
         {/* Main content area: Fireside or selected section (same card design, then Start → content) */}
-        {activeSection === 'fireside' ? (
-          firesideSectionStarted ? (
-            renderCheckinSection()
-          ) : (
-            <View style={[styles.sectionCard, { backgroundColor: LIGHT_PURPLE }]}>
-              <View style={styles.sectionCardEmoji}>
-                <SectionIcon iconId={FIRESIDE_SECTION.icon} size={40} />
+        <View style={styles.mainContentWrap}>
+        {activeSection === 'minetoo' && sectionChatStarted === 'minetoo' ? (
+          (() => {
+            const step = minetooFlowStep;
+            if (step <= 2) {
+              const config = MINETOO_STEPS[step];
+              const currentValue =
+                step === 0 ? contactsFamily :
+                step === 1 ? contactsClosestFriends : contactsColleagues;
+              const setValue =
+                step === 0 ? setContactsFamily :
+                step === 1 ? setContactsClosestFriends : setContactsColleagues;
+              return (
+                <View style={[styles.sectionCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder }]}>
+                  <Text style={styles.contactsSectionTitle}>{config.title}</Text>
+                  {config.subtitle ? <Text style={styles.contactsSectionSubtitle}>{config.subtitle}</Text> : null}
+                  <View style={styles.contactsRangeRow}>
+                    {config.options.map((opt, i) => (
+                      <TouchableOpacity
+                        key={i}
+                        style={[styles.contactsRangeChip, currentValue === opt.midpoint && styles.contactsRangeChipSelected]}
+                        onPress={() => {
+                          setValue(opt.midpoint);
+                          setMinetooFlowStep((step + 1) as 0 | 1 | 2 | 3);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={[styles.contactsRangeChipText, currentValue === opt.midpoint && styles.contactsRangeChipTextSelected]}>{opt.displayLabel}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.startFiresideButton, { marginTop: 16 }]}
+                    onPress={() => { setSectionChatStarted(null); setMinetooFlowStep(0); }}
+                  >
+                    <Text style={styles.startFiresideButtonText}>{t.home.back}</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }
+            const total = (contactsFamily ?? 0) + (contactsClosestFriends ?? 0) + (contactsColleagues ?? 0);
+            const reach = total * CONTACT_ESTIMATE_MULTIPLIER;
+            return (
+              <View style={[styles.sectionCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder }]}>
+                <Text style={styles.contactsSectionTitle}>{t.home.minetooYourTotal}</Text>
+                <Text style={styles.contactsSectionSubtitle}>{t.home.minetooTotalSubtitle}</Text>
+                <Text style={styles.contactsTotalLabel}>{t.home.minetooTotalContacts(total)}</Text>
+                <Text style={styles.contactsCopy}>{t.home.minetooRoughReach(CONTACT_ESTIMATE_MULTIPLIER, reach.toLocaleString())}</Text>
+                <Text style={[styles.contactsCopy, { marginTop: 12 }]}>
+                  {t.home.minetooFriendsOfFriends(10 * total)}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.startFiresideButton, { marginTop: 12 }]}
+                  onPress={() => { setSectionChatStarted(null); setMinetooFlowStep(0); }}
+                >
+                  <Text style={styles.startFiresideButtonText}>{t.home.startOver}</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.sectionCardTitle}>{FIRESIDE_SECTION.title}</Text>
-              <Text style={styles.sectionCardDesc}>{FIRESIDE_SECTION.desc}</Text>
-              <TouchableOpacity
-                style={[styles.startFiresideButton, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonHover]}
-                onPress={() => { setFiresideSectionStarted(true); setFiresideStarted(true); setAnswers(questions.map(() => ({ value: 0, detailText: '', skipped: false }))); }}
-                onMouseEnter={Platform.OS === 'web' ? () => setStartFiresideHovered(true) : undefined}
-                onMouseLeave={Platform.OS === 'web' ? () => setStartFiresideHovered(false) : undefined}
-              >
-                <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>Start</Text>
-              </TouchableOpacity>
-            </View>
-          )
+            );
+          })()
         ) : sectionChatStarted === activeSection ? (
           <View style={styles.chatMainWrap}>
             <ScrollView style={styles.chatThreadScroll} contentContainerStyle={styles.chatThreadContent} keyboardShouldPersistTaps="handled">
               <View style={styles.chatBubbleWrapAssistant}>
                 <Text style={styles.chatBubbleText}>
                   {(() => {
-                    const sectionTitle = CATEGORIES.find(c => c.slug === activeSection)?.title;
+                    const sectionTitle = categories.find(c => c.slug === activeSection)?.title;
                     if (sectionTitle && (activeSection === 'boss' || activeSection === 'teammates' || activeSection === 'classmates')) {
-                      return `Let's outplai. How are you doing with your ${sectionTitle}?`;
+                      return t.home.chatGreeting(sectionTitle);
                     }
-                    return "Let's outplai!";
+                    return t.home.chatGreetingGeneric;
                   })()}
                 </Text>
               </View>
@@ -866,21 +952,20 @@ export default function HomeScreen() {
             <Text style={styles.sectionCardDesc}>{MINETOO_SECTION.desc}</Text>
             <TouchableOpacity
               style={[styles.startFiresideButton, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonHover]}
-              onPress={() => setSectionChatStarted('minetoo')}
-              onMouseEnter={Platform.OS === 'web' ? () => setStartFiresideHovered(true) : undefined}
-              onMouseLeave={Platform.OS === 'web' ? () => setStartFiresideHovered(false) : undefined}
+              onPress={() => { setSectionChatStarted('minetoo'); setMinetooFlowStep(0); setContactsFamily(null); setContactsClosestFriends(null); setContactsColleagues(null); }}
+              {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
             >
-              <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>Start</Text>
+              <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>{t.home.start}</Text>
             </TouchableOpacity>
           </View>
         ) : (() => {
-          const cat = CATEGORIES.find((c) => c.slug === activeSection);
+          const cat = categories.find((c) => c.slug === activeSection);
           if (!cat) return null;
           const hasAnyScores =
             effectiveAverages.boss != null ||
             effectiveAverages.teammates != null ||
             effectiveAverages.classmates != null;
-          const bgColor = hasAnyScores && user && cat.slug !== 'triangulation'
+          const bgColor = hasAnyScores && user
             ? (getSliderColor(effectiveAverages[cat.slug as 'boss' | 'teammates' | 'classmates'] ?? 0) ?? LIGHT_PURPLE)
             : (CATEGORY_COLORS[cat.slug] ?? LIGHT_PURPLE);
           return (
@@ -893,59 +978,76 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={[styles.startFiresideButton, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonHover]}
                 onPress={() => setSectionChatStarted(activeSection)}
-                onMouseEnter={Platform.OS === 'web' ? () => setStartFiresideHovered(true) : undefined}
-                onMouseLeave={Platform.OS === 'web' ? () => setStartFiresideHovered(false) : undefined}
+                {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
               >
-                <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>Start</Text>
+                <Text style={[styles.startFiresideButtonText, Platform.OS === 'web' && startFiresideHovered && styles.startFiresideButtonTextHover]}>{t.home.start}</Text>
               </TouchableOpacity>
             </View>
           );
         })()}
+        </View>
 
         {/* All sections: scroll to see (Fireside, Boss, Teammates, etc.) */}
         <View style={styles.sectionSelectorWrap}>
           <View style={styles.grid}>
-            {activeSection !== 'fireside' && (
-              <TouchableOpacity
-                key="fireside"
-                style={[styles.gridCard, { backgroundColor: '#f9f9f9' }]}
-                onPress={() => setActiveSectionAndScroll('fireside')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.gridTitleRow}>
-                  <View style={styles.gridEmoji}>
-                    <SectionIcon iconId="orbital" size={24} />
-                  </View>
-                  <Text style={styles.gridTitle}>Fireside</Text>
-                </View>
-                <Text style={styles.gridDesc} numberOfLines={2}>{FIRESIDE_SECTION.desc}</Text>
-              </TouchableOpacity>
-            )}
-            {CATEGORIES.filter((cat) => cat.slug !== activeSection).map((cat) => {
+            {categories.filter((cat) => cat.slug !== activeSection).map((cat) => {
               const hasAnyScores =
                 effectiveAverages.boss != null ||
                 effectiveAverages.teammates != null ||
                 effectiveAverages.classmates != null;
               let bgColor = '#f9f9f9';
-              if (user && hasAnyScores && cat.slug !== 'triangulation') {
+              if (user && hasAnyScores) {
                 const avg = effectiveAverages[cat.slug as 'boss' | 'teammates' | 'classmates'];
                 if (avg != null) bgColor = getSliderColor(avg);
               }
               return (
-                <TouchableOpacity
-                  key={cat.slug}
-                  style={[styles.gridCard, { backgroundColor: bgColor }]}
-                  onPress={() => setActiveSectionAndScroll(cat.slug)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.gridTitleRow}>
-                    <View style={styles.gridEmoji}>
-                      <SectionIcon iconId={cat.icon} size={24} />
+                <React.Fragment key={cat.slug}>
+                  <TouchableOpacity
+                    style={[styles.gridCard, { backgroundColor: bgColor }]}
+                    onPress={() => setActiveSectionAndScroll(cat.slug as typeof activeSection)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.gridTitleRow}>
+                      <View style={styles.gridEmoji}>
+                        <SectionIcon iconId={cat.icon} size={24} />
+                      </View>
+                      <Text style={styles.gridTitle}>{cat.title}</Text>
                     </View>
-                    <Text style={styles.gridTitle}>{cat.title}</Text>
-                  </View>
-                  <Text style={styles.gridDesc} numberOfLines={2}>{cat.desc}</Text>
-                </TouchableOpacity>
+                    <Text style={styles.gridDesc} numberOfLines={2}>{cat.desc}</Text>
+                  </TouchableOpacity>
+                  {cat.slug === 'classmates' ? (
+                    <View style={styles.showMeSection}>
+                      <View style={[styles.gridTitleRow, { marginBottom: 6 }]}>
+                        <View style={Platform.OS === 'web' ? styles.iconGrayscale : undefined}>
+                          <Text style={styles.gridEmoji}>📷</Text>
+                        </View>
+                        <Text style={styles.showMeTitle}>{t.home.showMeTitle}</Text>
+                      </View>
+                      <Text style={styles.showMeSubtitle}>{t.home.showMeSubtitle}</Text>
+                      <TouchableOpacity
+                        style={[styles.showMeButton, showMeLoading && styles.showMeButtonDisabled]}
+                        onPress={handleShowMe}
+                        disabled={showMeLoading}
+                      >
+                        <Text style={styles.showMeButtonText}>{showMeLoading ? t.home.processing : t.home.showMeSnap}</Text>
+                      </TouchableOpacity>
+                      {showMeError ? <Text style={styles.showMeError}>{showMeError}</Text> : null}
+                      {showMeImageUri ? (
+                        <View style={styles.showMePreview}>
+                          <Image source={{ uri: showMeImageUri }} style={styles.showMeImage} resizeMode="cover" />
+                        </View>
+                      ) : null}
+                      {showMeTranscription ? (
+                        <View style={styles.showMeResult}>
+                          <Text style={styles.showMeResultLabel}>{t.home.transcriptionLabel}</Text>
+                          <Text style={styles.showMeTranscription}>{showMeTranscription}</Text>
+                          <Text style={styles.showMeResultLabel}>{t.home.tipLabel}</Text>
+                          <Text style={styles.showMeTip}>{showMeTip}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  ) : null}
+                </React.Fragment>
               );
             })}
             {activeSection !== 'minetoo' && (
@@ -967,63 +1069,65 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={styles.showMeSection}>
-          <View style={[styles.gridTitleRow, { marginBottom: 6 }]}>
-            <View style={Platform.OS === 'web' ? styles.iconGrayscale : undefined}>
-              <Text style={styles.gridEmoji}>📷</Text>
+        {activeSection === 'classmates' ? (
+          <View style={styles.showMeSection}>
+            <View style={[styles.gridTitleRow, { marginBottom: 6 }]}>
+              <View style={Platform.OS === 'web' ? styles.iconGrayscale : undefined}>
+                <Text style={styles.gridEmoji}>📷</Text>
+              </View>
+              <Text style={styles.showMeTitle}>{t.home.showMeTitle}</Text>
             </View>
-            <Text style={styles.showMeTitle}>Show me</Text>
+            <Text style={styles.showMeSubtitle}>{t.home.showMeSubtitle}</Text>
+            <TouchableOpacity
+              style={[styles.showMeButton, showMeLoading && styles.showMeButtonDisabled]}
+              onPress={handleShowMe}
+              disabled={showMeLoading}
+            >
+              <Text style={styles.showMeButtonText}>{showMeLoading ? t.home.processing : t.home.showMeSnap}</Text>
+            </TouchableOpacity>
+            {showMeError ? <Text style={styles.showMeError}>{showMeError}</Text> : null}
+            {showMeImageUri ? (
+              <View style={styles.showMePreview}>
+                <Image source={{ uri: showMeImageUri }} style={styles.showMeImage} resizeMode="cover" />
+              </View>
+            ) : null}
+            {showMeTranscription ? (
+              <View style={styles.showMeResult}>
+                <Text style={styles.showMeResultLabel}>{t.home.transcriptionLabel}</Text>
+                <Text style={styles.showMeTranscription}>{showMeTranscription}</Text>
+                <Text style={styles.showMeResultLabel}>{t.home.tipLabel}</Text>
+                <Text style={styles.showMeTip}>{showMeTip}</Text>
+              </View>
+            ) : null}
           </View>
-          <Text style={styles.showMeSubtitle}>I'll give you a quick tip to try.</Text>
-          <TouchableOpacity
-            style={[styles.showMeButton, showMeLoading && styles.showMeButtonDisabled]}
-            onPress={handleShowMe}
-            disabled={showMeLoading}
-          >
-            <Text style={styles.showMeButtonText}>{showMeLoading ? 'Reading…' : 'Snap it!'}</Text>
-          </TouchableOpacity>
-          {showMeError ? <Text style={styles.showMeError}>{showMeError}</Text> : null}
-          {showMeImageUri ? (
-            <View style={styles.showMePreview}>
-              <Image source={{ uri: showMeImageUri }} style={styles.showMeImage} resizeMode="cover" />
-            </View>
-          ) : null}
-          {showMeTranscription ? (
-            <View style={styles.showMeResult}>
-              <Text style={styles.showMeResultLabel}>Transcription</Text>
-              <Text style={styles.showMeTranscription}>{showMeTranscription}</Text>
-              <Text style={styles.showMeResultLabel}>💡 Tip</Text>
-              <Text style={styles.showMeTip}>{showMeTip}</Text>
-            </View>
-          ) : null}
-        </View>
+        ) : null}
 
         {user && (reminders?.length ?? 0) > 0 ? (
           <View style={styles.remindersSection}>
-            <Text style={styles.remindersTitle}>📌 Things to work on</Text>
-            <Text style={styles.remindersSubtitle}>You scored 3 or below here. Try the tip next time — you got this.</Text>
+            <Text style={styles.remindersTitle}>{t.home.remindersTitle}</Text>
+            <Text style={styles.remindersSubtitle}>{t.home.remindersSubtitle}</Text>
             <TouchableOpacity
               style={styles.sendToPhoneButton}
               onPress={() => {
                 const first = reminders?.[0];
                 const msg = first
-                  ? `My plai reminder: ${first.question} — 💡 ${first.advice}`
-                  : 'My plai: check your follow-ups in the app.';
+                  ? `${t.appName}: ${first.question} — 💡 ${first.advice}`
+                  : `${t.appName}: ${t.home.remindersTitle}`;
                 sendReminderToPhone(profile?.reminder_via ?? null, profile?.reminder_phone, msg);
               }}
             >
-              <Text style={styles.sendToPhoneButtonText}>Send these tips to my phone</Text>
+              <Text style={styles.sendToPhoneButtonText}>{t.home.sendToPhone}</Text>
             </TouchableOpacity>
             {(reminders ?? []).slice(0, 5).map((r) => (
               <View key={r.id} style={styles.reminderCard}>
                 <Text style={styles.reminderDate}>{r.checkin_date}</Text>
                 <Text style={styles.reminderQuestion}>{r.emoji ? `${r.emoji} ` : ''}{r.question}</Text>
-                <Text style={styles.reminderScore}>Your score: {r.value}/5</Text>
+                <Text style={styles.reminderScore}>{t.home.reminderScore(r.value)}</Text>
                 <Text style={styles.reminderAdvice}>💡 {r.advice}</Text>
               </View>
             ))}
             {(reminders?.length ?? 0) > 5 ? (
-              <Text style={styles.remindersMore}>+{(reminders?.length ?? 0) - 5} more from the last 14 days</Text>
+              <Text style={styles.remindersMore}>{t.home.remindersMore((reminders?.length ?? 0) - 5)}</Text>
             ) : null}
           </View>
         ) : null}
@@ -1032,12 +1136,12 @@ export default function HomeScreen() {
           <View style={styles.footerLinks}>
             {user ? (
               <TouchableOpacity onPress={signOut} style={styles.footerLink}>
-                <Text style={styles.footerLinkText}>Sign out</Text>
+                <Text style={styles.footerLinkText}>{t.home.signOut}</Text>
               </TouchableOpacity>
             ) : (
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity style={styles.footerLink}>
-                  <Text style={styles.footerLinkText}>Sign in</Text>
+                  <Text style={styles.footerLinkText}>{t.home.signIn}</Text>
                 </TouchableOpacity>
               </Link>
             )}
@@ -1055,6 +1159,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   sectionSelectorWrap: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
     marginTop: 24,
     paddingTop: 16,
     paddingBottom: Platform.OS === 'web' ? 24 : 32,
@@ -1067,6 +1174,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: Platform.OS === 'web' ? 48 : 60,
     paddingBottom: 24,
+    alignItems: 'center',
+  },
+  mainContentWrap: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
   },
   topLogo: {
     flexDirection: 'row',
@@ -1196,6 +1309,17 @@ const styles = StyleSheet.create({
   startFiresideButtonTextHover: {
     color: '#4b5563',
   },
+  saveYourAnswersButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  saveYourAnswersButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
   firesideSummarySubsections: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1212,6 +1336,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: colors.text,
+  },
+  firesideSummaryAnswersList: {
+    marginTop: 16,
+    marginBottom: 12,
+    gap: 12,
+  },
+  firesideSummaryAnswerCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: colors.backgroundElevated,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  firesideSummaryAnswerQuestion: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  firesideSummaryAnswerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   firesideNewFiresideText: {
     fontSize: 15,
@@ -1537,6 +1685,16 @@ const styles = StyleSheet.create({
     gap: 6,
     alignItems: 'center',
     marginTop: 8,
+  },
+  saveMyAnswersLinkWrap: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  saveMyAnswersLink: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
   primaryButton: {
     backgroundColor: 'transparent',

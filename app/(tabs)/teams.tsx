@@ -13,8 +13,8 @@ import {
 import { useState } from 'react';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useT } from '../../src/i18n';
 import { useTeams } from '../../src/hooks/useTeams';
-import { Logo } from '../../src/components/Logo';
 import { colors, fonts } from '../../src/theme';
 import {
   analyzeConversation,
@@ -27,6 +27,7 @@ const paddingHorizontal = 12;
 
 export default function TeamsScreen() {
   const { user, profile } = useAuth();
+  const t = useT();
   const { teams, loading, error, createTeam, joinTeam, refresh } = useTeams(user?.id);
 
   const [createName, setCreateName] = useState('');
@@ -49,9 +50,9 @@ export default function TeamsScreen() {
     try {
       const team = await createTeam(name);
       setCreateName('');
-      Alert.alert('Team created', `Invite others with code: ${team.invite_code}`);
+      Alert.alert(t.teams.teamCreated, `${t.teams.inviteOthersWithCode} ${team.invite_code}`);
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Could not create team');
+      Alert.alert(t.teams.error, e instanceof Error ? e.message : t.teams.couldNotCreate);
     } finally {
       setCreateLoading(false);
     }
@@ -65,9 +66,9 @@ export default function TeamsScreen() {
     try {
       await joinTeam(code);
       setInviteCode('');
-      Alert.alert('Joined', 'You joined the team.');
+      Alert.alert(t.teams.joined, t.teams.youJoinedTeam);
     } catch (e) {
-      setJoinError(e instanceof Error ? e.message : 'Could not join');
+      setJoinError(e instanceof Error ? e.message : t.teams.couldNotJoin);
     } finally {
       setJoinLoading(false);
     }
@@ -89,12 +90,12 @@ export default function TeamsScreen() {
         conversationText: conversationText.trim(),
         recommendationText: formatRecommendationsAsText(recommendations),
       });
-      Alert.alert('Saved', 'Analysis saved to your history.');
+      Alert.alert(t.teams.saved, t.teams.analysisSaved);
       setConversationText('');
       setOtherMemberName('');
       setRecommendations(null);
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Could not save');
+      Alert.alert(t.teams.error, e instanceof Error ? e.message : t.teams.couldNotSave);
     } finally {
       setSaveLoading(false);
     }
@@ -105,14 +106,14 @@ export default function TeamsScreen() {
       <View style={styles.container}>
         <Link href="/(tabs)" asChild>
           <TouchableOpacity style={styles.topLogo} accessibilityLabel="Go to home">
-            <Logo size={32} />
+            <Text style={styles.topLogoText}>← {t.nav.home}</Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.centered}>
-          <Text style={styles.signInPrompt}>Sign in to use Teams and analyze conversations.</Text>
+          <Text style={styles.signInPrompt}>{t.teams.signInPrompt}</Text>
           <Link href="/(auth)/login" asChild>
             <TouchableOpacity style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Sign In</Text>
+              <Text style={styles.primaryButtonText}>{t.auth.signIn}</Text>
             </TouchableOpacity>
           </Link>
         </View>
@@ -128,7 +129,7 @@ export default function TeamsScreen() {
     >
       <Link href="/(tabs)" asChild>
         <TouchableOpacity style={styles.topLogo} accessibilityLabel="Go to home">
-          <Logo size={32} />
+          <Text style={styles.topLogoText}>← {t.nav.home}</Text>
         </TouchableOpacity>
       </Link>
       <ScrollView
@@ -137,30 +138,30 @@ export default function TeamsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* My Teams */}
-        <Text style={styles.sectionTitle}>My Teams</Text>
+        <Text style={styles.sectionTitle}>{t.teams.title}</Text>
         {loading ? (
           <ActivityIndicator color={colors.accent} style={{ marginVertical: 16 }} />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : teams.length === 0 ? (
-          <Text style={styles.mutedText}>No teams yet. Create one or join with a code.</Text>
+          <Text style={styles.mutedText}>{t.teams.noTeams}</Text>
         ) : (
           <View style={styles.teamList}>
-            {teams.map((t) => (
-              <View key={t.id} style={styles.teamCard}>
-                <Text style={styles.teamName}>{t.name}</Text>
-                <Text style={styles.inviteCode}>Code: {t.invite_code}</Text>
+            {teams.map((tm) => (
+              <View key={tm.id} style={styles.teamCard}>
+                <Text style={styles.teamName}>{tm.name}</Text>
+                <Text style={styles.inviteCode}>{t.teams.code} {tm.invite_code}</Text>
               </View>
             ))}
           </View>
         )}
 
         {/* Create team */}
-        <Text style={styles.sectionTitle}>Create a team</Text>
+        <Text style={styles.sectionTitle}>{t.teams.createATeam}</Text>
         <View style={styles.row}>
           <TextInput
             style={styles.input}
-            placeholder="Team name"
+            placeholder={t.teams.teamNamePlaceholder}
             placeholderTextColor={colors.textMuted}
             value={createName}
             onChangeText={setCreateName}
@@ -173,17 +174,17 @@ export default function TeamsScreen() {
             {createLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.primaryButtonText}>Create</Text>
+              <Text style={styles.primaryButtonText}>{t.teams.create}</Text>
             )}
           </TouchableOpacity>
         </View>
 
         {/* Join team */}
-        <Text style={styles.sectionTitle}>Join with code</Text>
+        <Text style={styles.sectionTitle}>{t.teams.joinWithCode}</Text>
         <View style={styles.row}>
           <TextInput
             style={styles.input}
-            placeholder="Invite code (e.g. ABC123)"
+            placeholder={t.teams.inviteCodePlaceholder}
             placeholderTextColor={colors.textMuted}
             value={inviteCode}
             onChangeText={(v) => { setInviteCode(v); setJoinError(''); }}
@@ -198,20 +199,20 @@ export default function TeamsScreen() {
             {joinLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.primaryButtonText}>Join</Text>
+              <Text style={styles.primaryButtonText}>{t.teams.join}</Text>
             )}
           </TouchableOpacity>
         </View>
         {joinError ? <Text style={styles.errorText}>{joinError}</Text> : null}
 
         {/* Analyze conversation */}
-        <Text style={styles.sectionTitle}>Analyze a conversation</Text>
+        <Text style={styles.sectionTitle}>{t.teams.analyzeConversation}</Text>
         <Text style={styles.mutedText}>
-          Paste a conversation with a team member (or anyone). We'll suggest how to improve your communication.
+          {t.teams.analyzeDesc}
         </Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Paste the conversation here..."
+          placeholder={t.teams.conversationPlaceholder}
           placeholderTextColor={colors.textMuted}
           value={conversationText}
           onChangeText={setConversationText}
@@ -220,19 +221,19 @@ export default function TeamsScreen() {
         />
         {teams.length > 0 && (
           <View style={styles.row}>
-            <Text style={styles.label}>Team (optional)</Text>
+            <Text style={styles.label}>{t.teams.teamOptional}</Text>
             <View style={styles.pickerRow}>
-              {teams.map((t) => (
+              {teams.map((tm) => (
                 <TouchableOpacity
-                  key={t.id}
+                  key={tm.id}
                   style={[
                     styles.chip,
-                    selectedTeamId === t.id && styles.chipSelected,
+                    selectedTeamId === tm.id && styles.chipSelected,
                   ]}
-                  onPress={() => setSelectedTeamId(selectedTeamId === t.id ? '' : t.id)}
+                  onPress={() => setSelectedTeamId(selectedTeamId === tm.id ? '' : tm.id)}
                 >
-                  <Text style={[styles.chipText, selectedTeamId === t.id && styles.chipTextSelected]}>
-                    {t.name}
+                  <Text style={[styles.chipText, selectedTeamId === tm.id && styles.chipTextSelected]}>
+                    {tm.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -241,7 +242,7 @@ export default function TeamsScreen() {
         )}
         <TextInput
           style={styles.input}
-          placeholder="Other person's name (optional)"
+          placeholder={t.teams.otherPersonName}
           placeholderTextColor={colors.textMuted}
           value={otherMemberName}
           onChangeText={setOtherMemberName}
@@ -254,13 +255,13 @@ export default function TeamsScreen() {
           {analyzing ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.primaryButtonText}>Get recommendations</Text>
+            <Text style={styles.primaryButtonText}>{t.teams.getRecommendations}</Text>
           )}
         </TouchableOpacity>
 
         {recommendations && recommendations.length > 0 && (
           <View style={styles.recommendations}>
-            <Text style={styles.sectionTitle}>Recommendations</Text>
+            <Text style={styles.sectionTitle}>{t.teams.recommendations}</Text>
             {recommendations.map((r, i) => (
               <View key={i} style={[styles.recCard, r.type === 'positive' && styles.recPositive, r.type === 'suggestion' && styles.recSuggestion]}>
                 <Text style={styles.recTitle}>{r.title}</Text>
@@ -275,7 +276,7 @@ export default function TeamsScreen() {
               {saveLoading ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Text style={styles.secondaryButtonText}>Save this analysis</Text>
+                <Text style={styles.secondaryButtonText}>{t.teams.saveAnalysis}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -294,6 +295,11 @@ const styles = StyleSheet.create({
     paddingHorizontal,
     paddingTop: 56,
     paddingBottom: 8,
+  },
+  topLogoText: {
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    color: colors.text,
   },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal, paddingBottom: 40 },

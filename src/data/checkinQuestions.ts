@@ -1,8 +1,11 @@
 /**
- * Vibe Working — 38 Check-in Questions + Coaching Advice
+ * Vibe Working — 205 Check-in Questions + Coaching Advice
  * Classified by relationship: boss | teammates | classmates
  * Used client-side for rotation logic; DB seed in 003_seed_checkin_questions.sql
  */
+import { getLocale } from '../i18n';
+import { getT } from '../i18n';
+import { CHECKIN_QUESTIONS_ES } from './checkinQuestions_es';
 
 export type RelationshipCategory = 'boss' | 'teammates' | 'classmates';
 
@@ -17,11 +20,31 @@ export interface CheckinQuestionData {
   advice: string;
 }
 
+/** Locale-aware relationship labels */
+export function getRelationshipLabels(): Record<RelationshipCategory, string> {
+  const t = getT();
+  return t.relationships;
+}
+
+/** @deprecated Use getRelationshipLabels() for locale-aware labels */
 export const RELATIONSHIP_LABELS: Record<RelationshipCategory, string> = {
   boss: 'Boss',
   teammates: 'Your Teammates',
   classmates: 'Your Classmates',
 };
+
+/** Returns a localized copy of a CheckinQuestionData based on current locale */
+export function getLocalizedQuestion(q: CheckinQuestionData): CheckinQuestionData {
+  if (getLocale() !== 'es') return q;
+  const es = CHECKIN_QUESTIONS_ES[q.id];
+  if (!es) return q;
+  return {
+    ...q,
+    question: es.question,
+    example: es.example ?? q.example,
+    advice: es.advice,
+  };
+}
 
 /** Score below this shows the coach tip; tip auto-appears when slider moves below this. */
 export const LOW_SCORE_THRESHOLD = 3.5;
@@ -265,7 +288,6 @@ export const CHECKIN_QUESTIONS: CheckinQuestionData[] = [
   { id: 'q231', sortOrder: 231, emoji: '✨', category: 'Surprise', relationshipCategory: 'teammates', question: 'Break the routine and bring something unexpected to a team interaction?', example: 'e.g. One light moment in a heavy meeting or a new format for the standup.', advice: 'One fresh element. It stands out.' },
   { id: 'q232', sortOrder: 232, emoji: '🎁', category: 'Reciprocity', relationshipCategory: 'teammates', question: 'Do a small, unrequested favor for a teammate before they asked?', example: 'e.g. Sharing a template they needed or flagging something before it became a problem.', advice: 'One invisible help. They notice when they don’t have to ask.' },
   { id: 'q233', sortOrder: 233, emoji: '🪞', category: 'Connection', relationshipCategory: 'teammates', question: 'Discover something you have in common with a teammate outside of work?', example: 'e.g. Same hobby, same music, or same kind of vacation.', advice: 'One shared thing. Makes the relationship real.' },
-  { id: 'q234', sortOrder: 234, emoji: '🙌', category: 'Warmth', relationshipCategory: 'teammates', question: 'Publicly recognize something a teammate did well — in a meeting, chat, or email?', example: 'e.g. Calling out their fix in the channel or thanking them in the team meeting.', advice: 'One public credit. Be specific.' },
   { id: 'q235', sortOrder: 235, emoji: '📌', category: 'Reciprocity', relationshipCategory: 'teammates', question: 'Avoid doing anything unpredictable that could make a teammate question your reliability?', example: 'e.g. Showing up when you said you would and giving a heads-up if something changed.', advice: 'Predictable = trustworthy. One steady move.' },
   { id: 'q236', sortOrder: 236, emoji: '💫', category: 'Presence', relationshipCategory: 'teammates', question: 'Use your personal style to make team interactions more enjoyable?', example: 'e.g. A tasteful joke when the room was tense or one angle only you would raise.', advice: 'One authentic touch. Don’t perform — be you.' },
   { id: 'q237', sortOrder: 237, emoji: '🔗', category: 'Listening', relationshipCategory: 'teammates', question: 'Reference something from a past conversation with a teammate?', example: 'e.g. "Last time you mentioned X — here’s how that landed."', advice: 'One callback. It proves you listen.' },
@@ -371,6 +393,10 @@ function seededRandom(seed: string): number {
 
 /** Returns a display version of the question with mixed word order or synonyms (stable per question id). */
 export function getDisplayQuestion(q: CheckinQuestionData): string {
+  // For Spanish, return the localized question as-is (no synonym swaps)
+  const localized = getLocalizedQuestion(q);
+  if (getLocale() === 'es') return localized.question;
+
   const r1 = seededRandom(q.id);
   const r2 = seededRandom(q.id + 'a');
   let text = q.question;
@@ -499,6 +525,21 @@ function hash(n: number): number {
 /** Value is 1–5 in 0.5 steps. Maps to adjective label. */
 export function getSliderLabel(value: number): string {
   const index = Math.min(8, Math.max(0, Math.round((value - 1) * 2)));
+  if (getLocale() === 'es') {
+    const t = getT();
+    const esLabels = [
+      t.sliderLabels.verySlightly,
+      t.sliderLabels.slightly,
+      t.sliderLabels.somewhat,
+      t.sliderLabels.moderately,
+      t.sliderLabels.fairly,
+      t.sliderLabels.quite,
+      t.sliderLabels.very,
+      t.sliderLabels.really,
+      t.sliderLabels.extremely,
+    ];
+    return esLabels[index] ?? t.sliderLabels.fairly;
+  }
   return SLIDER_LABELS[index] ?? 'Fairly';
 }
 
@@ -531,6 +572,27 @@ export const FIRESIDE_OPTION_LABELS = [
 export const FIRESIDE_OPTION_EMOJIS = ['🫥', '🙂', '😊', '✨'] as const;
 
 export function getFiresideSliderLabel(value: number): string {
-  if (value >= 1 && value <= 4) return FIRESIDE_SLIDER_LABELS[Math.round(value)] ?? '';
+  if (value >= 1 && value <= 4) {
+    if (getLocale() === 'es') {
+      const t = getT();
+      const esLabels: Record<number, string> = {
+        1: t.fireside.barely,
+        2: t.fireside.notOften,
+        3: t.fireside.regularly,
+        4: t.fireside.allTheTime,
+      };
+      return esLabels[Math.round(value)] ?? '';
+    }
+    return FIRESIDE_SLIDER_LABELS[Math.round(value)] ?? '';
+  }
   return '';
+}
+
+/** Locale-aware fireside option labels (1–4) */
+export function getFiresideOptionLabels(): readonly string[] {
+  if (getLocale() === 'es') {
+    const t = getT();
+    return [t.fireside.barely, t.fireside.notOften, t.fireside.regularly, t.fireside.allTheTime];
+  }
+  return FIRESIDE_OPTION_LABELS;
 }

@@ -9,18 +9,19 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/hooks/useAuth';
-import { Logo } from '../../src/components/Logo';
 import { colors } from '../../src/theme';
+import { useT } from '../../src/i18n';
 
 export default function ForgotPasswordScreen() {
   const { resetPassword } = useAuth();
+  const t = useT();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
   const handleReset = async () => {
     if (!email) {
-      Alert.alert('Missing email', 'Please enter your email.');
+      Alert.alert(t.auth.missingFields, t.auth.fillAllFields);
       return;
     }
     await resetPassword(email.trim());
@@ -30,29 +31,28 @@ export default function ForgotPasswordScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Logo size={56} />
-        <Text style={styles.title}>Reset Password</Text>
+        <Text style={styles.title}>{t.auth.resetPassword}</Text>
         {sent ? (
           <View>
             <Text style={styles.sub}>
-              Check your email for a reset link.
+              {t.auth.resetSent}
             </Text>
             <TouchableOpacity
               style={styles.btn}
               onPress={() => router.replace('/(auth)/login')}
             >
-              <Text style={styles.btnText}>Back to Sign In</Text>
+              <Text style={styles.btnText}>{t.auth.backToLogin}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View>
             <Text style={styles.sub}>
-              Enter your email and we will send a reset link.
+              {t.auth.sendResetLink}
             </Text>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t.auth.email}</Text>
             <TextInput
               style={styles.input}
-              placeholder="you@example.com"
+              placeholder={t.auth.emailPlaceholder}
               placeholderTextColor="#555"
               value={email}
               onChangeText={setEmail}
@@ -63,13 +63,13 @@ export default function ForgotPasswordScreen() {
               style={styles.btn}
               onPress={handleReset}
             >
-              <Text style={styles.btnText}>Send Reset Link</Text>
+              <Text style={styles.btnText}>{t.auth.sendResetLink}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.back}
               onPress={() => router.back()}
             >
-              <Text style={styles.backText}>Back to Sign In</Text>
+              <Text style={styles.backText}>{t.auth.backToLogin}</Text>
             </TouchableOpacity>
           </View>
         )}

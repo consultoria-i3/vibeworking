@@ -21,14 +21,16 @@ import {
   getSliderLabel,
   getSliderColor,
   getDisplayQuestion,
+  getLocalizedQuestion,
   LOW_SCORE_THRESHOLD,
   MAX_QUESTIONS_SIGNED_IN,
   type CheckinQuestionData,
 } from '../../src/data/checkinQuestions';
-import { Logo } from '../../src/components/Logo';
 import { colors } from '../../src/theme';
+import { useT } from '../../src/i18n';
 
 export default function CheckinScreen() {
+  const t = useT();
   const router = useRouter();
   const { user, profile, updateProfile } = useAuth();
   const { canCheckin, submitCheckin, refresh } = useCheckin(user?.id);
@@ -50,6 +52,8 @@ export default function CheckinScreen() {
   const autoAdvanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [progressBarPercent, setProgressBarPercent] = useState(0);
   const [countdownSeconds, setCountdownSeconds] = useState(0);
+  const [tipReminderVia, setTipReminderVia] = useState<string | null>(null);
+  const [tipReminderPhone, setTipReminderPhone] = useState('');
 
   const currentQ = questions[step];
   const currentAnswer = answers[step];
@@ -241,15 +245,15 @@ export default function CheckinScreen() {
 
   const handleVisitorSignup = async () => {
     if (!signupName || !signupEmail || !signupPassword) {
-      Alert.alert('Missing', 'Fill all fields');
+      Alert.alert(t.auth.missingTitle, t.auth.fillAllFields);
       return;
     }
     if (signupPassword !== signupConfirm) {
-      Alert.alert('Error', "Passwords don't match");
+      Alert.alert(t.auth.errorTitle, t.auth.passwordsDontMatch);
       return;
     }
     if (signupPassword.length < 6) {
-      Alert.alert('Error', 'Min 6 characters');
+      Alert.alert(t.auth.errorTitle, t.auth.minChars);
       return;
     }
     const supabase = getSupabaseOrNull();
@@ -275,9 +279,9 @@ export default function CheckinScreen() {
   if (!currentQ && !showSignupForm) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>No questions for this rotation</Text>
+        <Text style={styles.title}>{t.checkin.noQuestions}</Text>
         <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Go Back</Text>
+          <Text style={styles.buttonText}>{t.checkin.goBack}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -295,39 +299,39 @@ export default function CheckinScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <Text style={styles.signupHeadline}>
-              Save your play.
+              {t.checkin.saveYourPlay}
             </Text>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>{t.auth.fullName}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Your name"
+              placeholder={t.auth.namePlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupName}
               onChangeText={setSignupName}
             />
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t.auth.email}</Text>
             <TextInput
               style={styles.input}
-              placeholder="you@example.com"
+              placeholder={t.auth.emailPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupEmail}
               onChangeText={setSignupEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>{t.auth.password}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Min 6 characters"
+              placeholder={t.auth.passwordPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={signupPassword}
               onChangeText={setSignupPassword}
               secureTextEntry
             />
-            <Text style={styles.label}>Confirm Password</Text>
+            <Text style={styles.label}>{t.auth.confirmPassword}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Repeat password"
+              placeholder={t.auth.repeatPassword}
               placeholderTextColor={colors.textMuted}
               value={signupConfirm}
               onChangeText={setSignupConfirm}
@@ -340,7 +344,7 @@ export default function CheckinScreen() {
               disabled={submitting}
             >
               <Text style={styles.buttonText}>
-                {submitting ? 'Creating...' : 'Save my answers'}
+                {submitting ? t.checkin.creating : t.checkin.saveMyAnswers}
               </Text>
             </TouchableOpacity>
           </ScrollView>
@@ -358,8 +362,7 @@ export default function CheckinScreen() {
       >
         <Link href="/(tabs)" asChild>
           <TouchableOpacity style={styles.checkinHeader} accessibilityLabel="Go to home">
-            <Logo size={48} />
-            <Text style={styles.header}>VIBE WORKING</Text>
+            <Text style={styles.header}>{t.appName}</Text>
           </TouchableOpacity>
         </Link>
         {!showResult ? (
@@ -369,7 +372,7 @@ export default function CheckinScreen() {
                 <Text style={styles.emoji}>{currentQ.emoji}</Text>
               </View>
               <Text style={styles.question}>{getDisplayQuestion(currentQ)}</Text>
-              {currentQ.example ? <Text style={styles.questionExample}>{currentQ.example}</Text> : null}
+              {getLocalizedQuestion(currentQ).example ? <Text style={styles.questionExample}>{getLocalizedQuestion(currentQ).example}</Text> : null}
               <Text style={styles.sliderLabel}>
                 {getSliderLabel(currentAnswer.value)}
               </Text>
@@ -390,9 +393,11 @@ export default function CheckinScreen() {
                     style={{
                       width: '100%',
                       height: 8,
-                      marginVertical: 4,
+                      marginTop: 4,
+                      marginBottom: 4,
                       minHeight: 44,
-                      paddingVertical: 18,
+                      paddingTop: 18,
+                      paddingBottom: 18,
                       accentColor: getSliderColor(currentAnswer.value),
                       cursor: 'pointer',
                     }}
@@ -441,21 +446,21 @@ export default function CheckinScreen() {
             <View style={styles.resultCard}>
               {isLowScore ? (
                 <>
-                  <Text style={styles.yourPlayLabel}>😊 Your play: {currentAnswer?.value ?? 3}</Text>
-                  <Text style={styles.resultTitle}>💡 Coach says try this</Text>
-                  <Text style={styles.resultText}>{currentQ.advice}</Text>
+                  <Text style={styles.yourPlayLabel}>{t.checkin.yourPlay} {currentAnswer?.value ?? 3}</Text>
+                  <Text style={styles.resultTitle}>{t.checkin.coachSays}</Text>
+                  <Text style={styles.resultText}>{getLocalizedQuestion(currentQ).advice}</Text>
                 </>
               ) : (
                 <>
-                  <Text style={styles.yourPlayLabel}>😊 Your play: {currentAnswer?.value ?? 3}</Text>
-                  <Text style={styles.resultTitle}>✨ Atta way!</Text>
+                  <Text style={styles.yourPlayLabel}>{t.checkin.yourPlay} {currentAnswer?.value ?? 3}</Text>
+                  <Text style={styles.resultTitle}>{t.checkin.attaWay}</Text>
                   <Text style={styles.resultText}>
-                    That\'s how we do it. Keep it up.
+                    {t.checkin.keepItUp}
                   </Text>
-                  {currentQ?.advice ? (
+                  {getLocalizedQuestion(currentQ)?.advice ? (
                     <View style={{ marginTop: 12 }}>
-                      <Text style={styles.resultTitle}>💡 Tip</Text>
-                      <Text style={styles.resultText}>{currentQ.advice}</Text>
+                      <Text style={styles.resultTitle}>{t.checkin.tip}</Text>
+                      <Text style={styles.resultText}>{getLocalizedQuestion(currentQ).advice}</Text>
                     </View>
                   ) : null}
                 </>
@@ -477,7 +482,7 @@ export default function CheckinScreen() {
         <View style={styles.buttonRow}>
           {!showResult ? (
             <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-              <Text style={styles.skipButtonText}>Skip</Text>
+              <Text style={styles.skipButtonText}>{t.checkin.skip}</Text>
             </TouchableOpacity>
           ) : null}
           {user ? (
@@ -486,7 +491,7 @@ export default function CheckinScreen() {
               onPress={handleSubmit}
               disabled={submitting}
             >
-              <Text style={styles.doneButtonText}>{submitting ? 'Saving...' : 'Done'}</Text>
+              <Text style={styles.doneButtonText}>{submitting ? t.checkin.saving : t.checkin.done}</Text>
             </TouchableOpacity>
           ) : null}
           <TouchableOpacity
@@ -496,12 +501,12 @@ export default function CheckinScreen() {
           >
             <Text style={styles.buttonText}>
               {submitting
-                ? 'Saving...'
+                ? t.checkin.saving
                 : showResult && isLastQuestion
-                ? (user ? 'Next' : 'Done')
+                ? (user ? t.checkin.next : t.checkin.done)
                 : showResult
-                ? 'Next'
-                : 'Continue'}
+                ? t.checkin.next
+                : t.checkin.continue}
             </Text>
           </TouchableOpacity>
         </View>

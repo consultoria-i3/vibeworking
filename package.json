@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "build": "expo export -p web",
     "build:web": "expo export -p web",
-    "deploy": "npm run build && npx vercel --prod"
+    "deploy": "npm run build && npx vercel --prod",
+    "vercel": "npx vercel --prod"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.0.0",
