@@ -72,7 +72,7 @@ export const en = {
     signIn: 'Sign in',
     firesideQuestion: 'Fireside?',
     newFireside: "Let's try more questions.",
-    saveYourAnswers: 'Save your answers',
+    saveYourAnswers: 'Save your tips',
     try3More: "Let's try 3 more",
     noScoreSelected: '😊 No score selected',
     slideToSelect: 'Slide to pick 1–4, then tap Continue.',

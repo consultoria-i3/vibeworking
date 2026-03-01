@@ -70,7 +70,7 @@ export const es: Translations = {
     signIn: 'Iniciar sesión',
     firesideQuestion: '¡Tus relaciones eres tú!',
     newFireside: 'Vamos a intentar más preguntas.',
-    saveYourAnswers: 'Guarda tus respuestas',
+    saveYourAnswers: 'Guarda tus tips',
     try3More: 'Intentemos 3 más',
     noScoreSelected: '😊 Sin puntaje',
     slideToSelect: 'Desliza de 1 a 4, luego toca Continuar.',
