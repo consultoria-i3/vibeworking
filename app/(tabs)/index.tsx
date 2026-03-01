@@ -600,13 +600,13 @@ export default function HomeScreen() {
             </View>
             <View style={styles.firesideSummaryAnswersList}>
               {answeredPairs.map(({ q, a }) => {
-                const label = getFiresideSliderLabel(a!.value!);
                 const isGood = a!.value! >= 3;
                 const answerColor = isGood ? '#22C55E' : '#DC2626';
+                const tip = getLocalizedQuestion(q).advice;
                 return (
                   <View key={q.id} style={styles.firesideSummaryAnswerCard}>
                     <Text style={styles.firesideSummaryAnswerQuestion}>{getDisplayQuestion(q)}</Text>
-                    <Text style={[styles.firesideSummaryAnswerLabel, { color: answerColor }]}>{label}</Text>
+                    <Text style={[styles.firesideSummaryAnswerLabel, { color: answerColor }]}>💡 {tip}</Text>
                   </View>
                 );
               })}
