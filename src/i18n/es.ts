@@ -89,8 +89,8 @@ export const es: Translations = {
     firesideTitle: '1 es 10',
     firesideDesc: 'Enfocémonos en la capacidad de caer bien.',
     // Minetoo section
-    minetooTitle: 'Tus contactos, mis contactos',
-    minetooDesc: 'Estima los tuyos y mide tu alcance.',
+    minetooTitle: '1 es 10!',
+    minetooDesc: 'Tus contactos, mis contactos. Con cada contacto extiendes 10 contactos tu alcance.',
     minetooYourTotal: 'Tu total',
     minetooTotalSubtitle: 'Contactos estimados entre familia, amigos, colegas y personas que reconoces.',
     minetooTotalContacts: (n: number) => `Total de contactos: ${n}`,

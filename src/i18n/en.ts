@@ -91,8 +91,8 @@ export const en = {
     firesideTitle: 'Your Outplai',
     firesideDesc: "Let's focus on likeability.",
     // Minetoo section
-    minetooTitle: 'Your contacts, my contacts',
-    minetooDesc: 'Estimate yours and see your reach.',
+    minetooTitle: '1 is 10!',
+    minetooDesc: 'Your contacts, my contacts. For each contact you extend your reach 10 times.',
     minetooYourTotal: 'Your total',
     minetooTotalSubtitle: 'Estimated contacts across family, friends, colleagues, and people you recognize.',
     minetooTotalContacts: (n: number) => `Total contacts: ${n}`,
