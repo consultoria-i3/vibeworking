@@ -126,7 +126,7 @@ export const en = {
     signupCreating: 'Creating...',
     signupSaveAnswers: 'Save my answers',
     categories: {
-      boss: { title: 'Boss', desc: 'How can I save you time? Get there early, stay late.' },
+      boss: { title: 'Boss', desc: 'Show you are a builder. How can I save you time? Get there earlier, leave last.' },
       teammates: { title: 'Teammates', desc: 'Please & Thank you. Do what you say. Finish what you start. Ask for advice often.' },
       classmates: { title: 'Classmates', desc: 'Casual favors machine!' },
       fireside: { title: 'Your Outplai', desc: "Let's focus on likeability." },

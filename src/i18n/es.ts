@@ -124,7 +124,7 @@ export const es: Translations = {
     signupCreating: 'Creando...',
     signupSaveAnswers: 'Guardar mis respuestas',
     categories: {
-      boss: { title: 'Jefe', desc: '¿Cómo te ahorro tiempo? Llego temprano, me quedo tarde.' },
+      boss: { title: 'Jefe', desc: 'Demuestra que eres alguien que construye. ¿Cómo te ahorro tiempo? Llega antes, vete al último.' },
       teammates: { title: 'Compañeros', desc: 'Por favor y gracias. Haz lo que dices. Termina lo que empiezas. Pide consejo seguido.' },
       classmates: { title: 'Conocidos', desc: '¡La máquina de favores casuales!' },
       fireside: { title: '1 es 10', desc: 'Enfocémonos en la capacidad de caer bien.' },
