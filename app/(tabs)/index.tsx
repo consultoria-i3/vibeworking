@@ -957,6 +957,22 @@ export default function HomeScreen() {
         {/* All sections: scroll to see (Fireside, Boss, Teammates, etc.) */}
         <View style={styles.sectionSelectorWrap}>
           <View style={styles.grid}>
+            {sectionChatStarted != null && (
+              <TouchableOpacity
+                key="fireside-card"
+                style={[styles.gridCard, { backgroundColor: LIGHT_PURPLE }]}
+                onPress={() => { setSectionChatStarted(null); setFiresideSectionStarted(false); setFiresideStarted(false); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+                activeOpacity={0.8}
+              >
+                <View style={styles.gridTitleRow}>
+                  <View style={styles.gridEmoji}>
+                    <SectionIcon iconId={'fireside' as SectionIconId} size={24} />
+                  </View>
+                  <Text style={styles.gridTitle}>{t.home.categories.fireside.title}</Text>
+                </View>
+                <Text style={styles.gridDesc} numberOfLines={2}>{t.home.categories.fireside.desc}</Text>
+              </TouchableOpacity>
+            )}
             {categories.map((cat) => {
               const hasAnyScores =
                 effectiveAverages.boss != null ||
