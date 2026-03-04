@@ -83,6 +83,7 @@ export const es: Translations = {
     youAreOutplaying: '¡Estás jugando de más!',
     useTheTips: '¡Usa los tips! ¡Va a funcionar!',
     tapToSeeTip: ' Toca para ver el tip.',
+    chatGreetingBoss: '¡Vamos a mejorar tu relación con tu jefe! Describe tus interacciones actuales.',
     chatGreeting: (section: string) => `Vamos a jugarla. ¿Cómo te va con tu ${section}?`,
     chatGreetingGeneric: '¡Vamos a jugarla!',
     chatReplyDefault: 'Estoy aquí para ayudarte. (Más próximamente.)',

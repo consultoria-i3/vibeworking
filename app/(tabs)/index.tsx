@@ -940,8 +940,9 @@ export default function HomeScreen() {
               <View style={styles.chatBubbleWrapAssistant}>
                 <Text style={styles.chatBubbleText}>
                   {(() => {
+                    if (activeSection === 'boss') return t.home.chatGreetingBoss;
                     const sectionTitle = categories.find(c => c.slug === activeSection)?.title;
-                    if (sectionTitle && (activeSection === 'boss' || activeSection === 'teammates' || activeSection === 'classmates')) {
+                    if (sectionTitle && (activeSection === 'teammates' || activeSection === 'classmates')) {
                       return t.home.chatGreeting(sectionTitle);
                     }
                     return t.home.chatGreetingGeneric;
@@ -1957,11 +1958,10 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   showMeButton: {
-    alignSelf: 'flex-start',
-    alignItems: 'flex-start',
+    alignSelf: 'center',
+    alignItems: 'center',
     paddingVertical: 12,
-    paddingLeft: 0,
-    paddingRight: 24,
+    paddingHorizontal: 24,
     backgroundColor: 'transparent',
     borderRadius: 12,
   },

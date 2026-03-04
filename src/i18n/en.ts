@@ -85,6 +85,7 @@ export const en = {
     youAreOutplaying: 'You are outplaying!',
     useTheTips: 'Use the tips! It will play out!',
     tapToSeeTip: ' Tap to see tip.',
+    chatGreetingBoss: "Let's outplai your relationship with your boss! Describe current interactions.",
     chatGreeting: (section: string) => `Let's outplai. How are you doing with your ${section}?`,
     chatGreetingGeneric: "Let's outplai!",
     chatReplyDefault: "I'm here to help. (More coming soon.)",
