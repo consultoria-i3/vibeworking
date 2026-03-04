@@ -187,7 +187,7 @@ export default function HomeScreen() {
   /** When user clicked Start on Fireside section card, show check-in (same graphic design as other sections first) */
   const [firesideSectionStarted, setFiresideSectionStarted] = useState(false);
   /** When user clicks Start on any section, open chat (greeting + thread + input). For Minetoo, opens step-by-step flow instead. */
-  const [sectionChatStarted, setSectionChatStarted] = useState<typeof activeSection | null>('boss');
+  const [sectionChatStarted, setSectionChatStarted] = useState<typeof activeSection | null>(null);
   /** Minetoo: 0=Family, 1=Closest friends, 2=Colleagues, 3=Total */
   const [minetooFlowStep, setMinetooFlowStep] = useState<0 | 1 | 2 | 3>(0);
   const [sectionChatReplies, setSectionChatReplies] = useState<{ role: 'user' | 'assistant'; text: string }[]>([]);
