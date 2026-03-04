@@ -982,6 +982,22 @@ export default function HomeScreen() {
                     </View>
                     <Text style={styles.gridDesc} numberOfLines={2}>{cat.desc}</Text>
                   </TouchableOpacity>
+                  {cat.slug === 'classmates' && activeSection !== 'minetoo' ? (
+                    <TouchableOpacity
+                      key="minetoo"
+                      style={[styles.gridCard, { backgroundColor: '#f9f9f9' }]}
+                      onPress={() => setActiveSectionAndScroll('minetoo')}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.gridTitleRow}>
+                        <View style={styles.gridEmoji}>
+                          <SectionIcon iconId={MINETOO_SECTION.icon} size={24} />
+                        </View>
+                        <Text style={styles.gridTitle}>{MINETOO_SECTION.title}</Text>
+                      </View>
+                      <Text style={styles.gridDesc} numberOfLines={2}>{MINETOO_SECTION.desc}</Text>
+                    </TouchableOpacity>
+                  ) : null}
                   {cat.slug === 'classmates' ? (
                     <View style={styles.showMeSection}>
                       <View style={[styles.gridTitleRow, { marginBottom: 6 }]}>
@@ -1017,22 +1033,6 @@ export default function HomeScreen() {
                 </React.Fragment>
               );
             })}
-            {activeSection !== 'minetoo' && (
-              <TouchableOpacity
-                key="minetoo"
-                style={[styles.gridCard, { backgroundColor: '#f9f9f9' }]}
-                onPress={() => setActiveSectionAndScroll('minetoo')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.gridTitleRow}>
-                  <View style={styles.gridEmoji}>
-                    <SectionIcon iconId={MINETOO_SECTION.icon} size={24} />
-                  </View>
-                  <Text style={styles.gridTitle}>{MINETOO_SECTION.title}</Text>
-                </View>
-                <Text style={styles.gridDesc} numberOfLines={2}>{MINETOO_SECTION.desc}</Text>
-              </TouchableOpacity>
-            )}
           </View>
         </View>
 
