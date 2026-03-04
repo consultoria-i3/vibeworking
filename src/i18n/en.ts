@@ -70,7 +70,7 @@ export const en = {
     startOver: 'Start over',
     signOut: 'Sign out',
     signIn: 'Sign in',
-    firesideQuestion: 'Fireside?',
+    firesideQuestion: 'Your Outplai',
     newFireside: "Let's try more questions.",
     saveYourAnswers: 'Save your tips',
     try3More: "Let's try 3 more",
