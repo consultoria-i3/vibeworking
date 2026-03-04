@@ -187,7 +187,7 @@ export default function HomeScreen() {
   /** When user clicked Start on Fireside section card, show check-in (same graphic design as other sections first) */
   const [firesideSectionStarted, setFiresideSectionStarted] = useState(false);
   /** When user clicks Start on any section, open chat (greeting + thread + input). For Minetoo, opens step-by-step flow instead. */
-  const [sectionChatStarted, setSectionChatStarted] = useState<typeof activeSection | null>(null);
+  const [sectionChatStarted, setSectionChatStarted] = useState<typeof activeSection | null>('boss');
   /** Minetoo: 0=Family, 1=Closest friends, 2=Colleagues, 3=Total */
   const [minetooFlowStep, setMinetooFlowStep] = useState<0 | 1 | 2 | 3>(0);
   const [sectionChatReplies, setSectionChatReplies] = useState<{ role: 'user' | 'assistant'; text: string }[]>([]);
@@ -960,7 +960,7 @@ export default function HomeScreen() {
             {sectionChatStarted != null && (
               <TouchableOpacity
                 key="fireside-card"
-                style={[styles.gridCard, { backgroundColor: LIGHT_PURPLE }]}
+                style={[styles.gridCard, { backgroundColor: '#ffffff' }]}
                 onPress={() => { setSectionChatStarted(null); setFiresideSectionStarted(false); setFiresideStarted(false); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
                 activeOpacity={0.8}
               >
@@ -974,20 +974,14 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )}
             {categories.map((cat) => {
-              const hasAnyScores =
-                effectiveAverages.boss != null ||
-                effectiveAverages.teammates != null ||
-                effectiveAverages.classmates != null;
-              let bgColor = '#f9f9f9';
-              if (user && hasAnyScores) {
-                const avg = effectiveAverages[cat.slug as 'boss' | 'teammates' | 'classmates'];
-                if (avg != null) bgColor = getSliderColor(avg);
-              }
+              /* Hide the card for the section currently shown in the purple window */
+              const isActiveInPurple = sectionChatStarted === cat.slug;
               return (
                 <React.Fragment key={cat.slug}>
+                  {!isActiveInPurple && (
                   <TouchableOpacity
-                    style={[styles.gridCard, { backgroundColor: bgColor }]}
-                    onPress={() => { setActiveSection(cat.slug as typeof activeSection); setSectionChatStarted(cat.slug as typeof activeSection); }}
+                    style={[styles.gridCard, { backgroundColor: '#ffffff' }]}
+                    onPress={() => { setActiveSection(cat.slug as typeof activeSection); setSectionChatStarted(cat.slug as typeof activeSection); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
                     activeOpacity={0.8}
                   >
                     <View style={styles.gridTitleRow}>
@@ -998,10 +992,11 @@ export default function HomeScreen() {
                     </View>
                     <Text style={styles.gridDesc} numberOfLines={2}>{cat.desc}</Text>
                   </TouchableOpacity>
-                  {cat.slug === 'classmates' && activeSection !== 'minetoo' ? (
+                  )}
+                  {cat.slug === 'classmates' && sectionChatStarted !== 'minetoo' ? (
                     <TouchableOpacity
                       key="minetoo"
-                      style={[styles.gridCard, { backgroundColor: '#f9f9f9' }]}
+                      style={[styles.gridCard, { backgroundColor: '#ffffff' }]}
                       onPress={() => { setActiveSection('minetoo'); setSectionChatStarted('minetoo'); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
                       activeOpacity={0.8}
                     >
