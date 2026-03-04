@@ -53,6 +53,7 @@ export const es: Translations = {
     showMeDesc: 'Toma una foto de lo que tienes enfrente y recibe un tip',
     showMeSubtitle: 'Te doy un tip rápido para que pruebes.',
     showMeSnap: '¡Tómala!',
+    snapItPurpleDesc: '¡Toma una foto del texto y recibe un tip rápido!',
     takePhoto: '📸 Tomar foto',
     pickFromLibrary: '🖼 Elegir de la galería',
     processing: 'Leyendo…',

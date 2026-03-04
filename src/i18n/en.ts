@@ -55,6 +55,7 @@ export const en = {
     showMeDesc: "Take a photo of what's in front of you and get a tip",
     showMeSubtitle: "I'll give you a quick tip to try.",
     showMeSnap: 'Snap it!',
+    snapItPurpleDesc: 'Take a picture of the text and get a quick tip!',
     takePhoto: '📸 Take photo',
     pickFromLibrary: '🖼 Pick from library',
     processing: 'Reading…',

@@ -183,7 +183,7 @@ export default function HomeScreen() {
   const [contactsClosestFriends, setContactsClosestFriends] = useState<number | null>(null);
   const [contactsColleagues, setContactsColleagues] = useState<number | null>(null);
   /** Section shown in the main content area (where Fireside lives). No navigation — content swaps in place. */
-  const [activeSection, setActiveSection] = useState<'boss' | 'teammates' | 'classmates' | 'minetoo'>('boss');
+  const [activeSection, setActiveSection] = useState<'boss' | 'teammates' | 'classmates' | 'minetoo' | 'snapit'>('boss');
   /** When user clicked Start on Fireside section card, show check-in (same graphic design as other sections first) */
   const [firesideSectionStarted, setFiresideSectionStarted] = useState(false);
   /** When user clicks Start on any section, open chat (greeting + thread + input). For Minetoo, opens step-by-step flow instead. */
@@ -849,7 +849,33 @@ export default function HomeScreen() {
 
         {/* Main content area: Fireside check-in lives in the main card; categories go below */}
         <View style={styles.mainContentWrap}>
-        {activeSection === 'minetoo' && sectionChatStarted === 'minetoo' ? (
+        {activeSection === 'snapit' && sectionChatStarted === 'snapit' ? (
+          <View style={[styles.sectionCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder }]}>
+            <Text style={styles.contactsSectionTitle}>{t.home.showMeTitle}</Text>
+            <Text style={styles.contactsSectionSubtitle}>{t.home.snapItPurpleDesc}</Text>
+            <TouchableOpacity
+              style={[styles.showMeButton, showMeLoading && styles.showMeButtonDisabled]}
+              onPress={handleShowMe}
+              disabled={showMeLoading}
+            >
+              <Text style={styles.showMeButtonText}>{showMeLoading ? t.home.processing : t.home.showMeSnap}</Text>
+            </TouchableOpacity>
+            {showMeError ? <Text style={styles.showMeError}>{showMeError}</Text> : null}
+            {showMeImageUri ? (
+              <View style={styles.showMePreview}>
+                <Image source={{ uri: showMeImageUri }} style={styles.showMeImage} resizeMode="cover" />
+              </View>
+            ) : null}
+            {showMeTranscription ? (
+              <View style={styles.showMeResult}>
+                <Text style={styles.showMeResultLabel}>{t.home.transcriptionLabel}</Text>
+                <Text style={styles.showMeTranscription}>{showMeTranscription}</Text>
+                <Text style={styles.showMeResultLabel}>{t.home.tipLabel}</Text>
+                <Text style={styles.showMeTip}>{showMeTip}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : activeSection === 'minetoo' && sectionChatStarted === 'minetoo' ? (
           (() => {
             const step = minetooFlowStep;
             if (step <= 2) {
@@ -1009,76 +1035,27 @@ export default function HomeScreen() {
                       <Text style={styles.gridDesc} numberOfLines={2}>{MINETOO_SECTION.desc}</Text>
                     </TouchableOpacity>
                   ) : null}
-                  {cat.slug === 'classmates' ? (
-                    <View style={styles.showMeSection}>
-                      <View style={[styles.gridTitleRow, { marginBottom: 6 }]}>
-                        <View style={Platform.OS === 'web' ? styles.iconGrayscale : undefined}>
-                          <Text style={styles.gridEmoji}>📷</Text>
+                  {cat.slug === 'classmates' && sectionChatStarted !== 'snapit' ? (
+                    <TouchableOpacity
+                      key="snapit"
+                      style={[styles.gridCard, { backgroundColor: '#ffffff' }]}
+                      onPress={() => { setActiveSection('snapit'); setSectionChatStarted('snapit'); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.gridTitleRow}>
+                        <View style={styles.gridEmoji}>
+                          <Text style={{ fontSize: 20 }}>📷</Text>
                         </View>
-                        <Text style={styles.showMeTitle}>{t.home.showMeTitle}</Text>
+                        <Text style={styles.gridTitle}>{t.home.showMeTitle}</Text>
                       </View>
-                      <Text style={styles.showMeSubtitle}>{t.home.showMeSubtitle}</Text>
-                      <TouchableOpacity
-                        style={[styles.showMeButton, showMeLoading && styles.showMeButtonDisabled]}
-                        onPress={handleShowMe}
-                        disabled={showMeLoading}
-                      >
-                        <Text style={styles.showMeButtonText}>{showMeLoading ? t.home.processing : t.home.showMeSnap}</Text>
-                      </TouchableOpacity>
-                      {showMeError ? <Text style={styles.showMeError}>{showMeError}</Text> : null}
-                      {showMeImageUri ? (
-                        <View style={styles.showMePreview}>
-                          <Image source={{ uri: showMeImageUri }} style={styles.showMeImage} resizeMode="cover" />
-                        </View>
-                      ) : null}
-                      {showMeTranscription ? (
-                        <View style={styles.showMeResult}>
-                          <Text style={styles.showMeResultLabel}>{t.home.transcriptionLabel}</Text>
-                          <Text style={styles.showMeTranscription}>{showMeTranscription}</Text>
-                          <Text style={styles.showMeResultLabel}>{t.home.tipLabel}</Text>
-                          <Text style={styles.showMeTip}>{showMeTip}</Text>
-                        </View>
-                      ) : null}
-                    </View>
+                      <Text style={styles.gridDesc} numberOfLines={2}>{t.home.showMeSubtitle}</Text>
+                    </TouchableOpacity>
                   ) : null}
                 </React.Fragment>
               );
             })}
           </View>
         </View>
-
-        {activeSection === 'classmates' ? (
-          <View style={styles.showMeSection}>
-            <View style={[styles.gridTitleRow, { marginBottom: 6 }]}>
-              <View style={Platform.OS === 'web' ? styles.iconGrayscale : undefined}>
-                <Text style={styles.gridEmoji}>📷</Text>
-              </View>
-              <Text style={styles.showMeTitle}>{t.home.showMeTitle}</Text>
-            </View>
-            <Text style={styles.showMeSubtitle}>{t.home.showMeSubtitle}</Text>
-            <TouchableOpacity
-              style={[styles.showMeButton, showMeLoading && styles.showMeButtonDisabled]}
-              onPress={handleShowMe}
-              disabled={showMeLoading}
-            >
-              <Text style={styles.showMeButtonText}>{showMeLoading ? t.home.processing : t.home.showMeSnap}</Text>
-            </TouchableOpacity>
-            {showMeError ? <Text style={styles.showMeError}>{showMeError}</Text> : null}
-            {showMeImageUri ? (
-              <View style={styles.showMePreview}>
-                <Image source={{ uri: showMeImageUri }} style={styles.showMeImage} resizeMode="cover" />
-              </View>
-            ) : null}
-            {showMeTranscription ? (
-              <View style={styles.showMeResult}>
-                <Text style={styles.showMeResultLabel}>{t.home.transcriptionLabel}</Text>
-                <Text style={styles.showMeTranscription}>{showMeTranscription}</Text>
-                <Text style={styles.showMeResultLabel}>{t.home.tipLabel}</Text>
-                <Text style={styles.showMeTip}>{showMeTip}</Text>
-              </View>
-            ) : null}
-          </View>
-        ) : null}
 
         {user && (reminders?.length ?? 0) > 0 ? (
           <View style={styles.remindersSection}>
