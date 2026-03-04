@@ -112,28 +112,21 @@ const CONTACT_RANGES = [
 
 const CONTACT_ESTIMATE_MULTIPLIER = 10; // multiply total contacts for rough reach
 
-/** Family members that work: only 30, 60, 90 */
-const CONTACT_FAMILY_OPTIONS = [
-  { displayLabel: '~30', midpoint: 30 },
-  { displayLabel: '~60', midpoint: 60 },
-  { displayLabel: '~90', midpoint: 90 },
-] as const;
-
-/** Friends, colleagues, clients: 30, 60, 90, 150, 250 */
-const CONTACT_COLLEAGUES_OPTIONS = [
-  { displayLabel: '~30', midpoint: 30 },
-  { displayLabel: '~60', midpoint: 60 },
-  { displayLabel: '~90', midpoint: 90 },
-  { displayLabel: '~150', midpoint: 150 },
-  { displayLabel: '~250', midpoint: 250 },
+/** Contact options: 5, 10, 15, 20, 25 for all questions */
+const CONTACT_OPTIONS = [
+  { displayLabel: '5', midpoint: 5 },
+  { displayLabel: '10', midpoint: 10 },
+  { displayLabel: '15', midpoint: 15 },
+  { displayLabel: '20', midpoint: 20 },
+  { displayLabel: '25', midpoint: 25 },
 ] as const;
 
 function getMinetooSteps() {
   const t = getT();
   return [
-    { title: t.home.minetooFamily, subtitle: t.home.minetooFamilySub, options: CONTACT_FAMILY_OPTIONS },
-    { title: t.home.minetooClosestFriends, subtitle: t.home.minetooClosestFriendsSub, options: CONTACT_COLLEAGUES_OPTIONS },
-    { title: t.home.minetooColleagues, subtitle: t.home.minetooColleaguesSub, options: CONTACT_COLLEAGUES_OPTIONS },
+    { title: t.home.minetooFamily, subtitle: t.home.minetooFamilySub, options: CONTACT_OPTIONS },
+    { title: t.home.minetooClosestFriends, subtitle: t.home.minetooClosestFriendsSub, options: CONTACT_OPTIONS },
+    { title: t.home.minetooColleagues, subtitle: t.home.minetooColleaguesSub, options: CONTACT_OPTIONS },
   ];
 }
 
