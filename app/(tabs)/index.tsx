@@ -986,7 +986,7 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       key="minetoo"
                       style={[styles.gridCard, { backgroundColor: '#f9f9f9' }]}
-                      onPress={() => setActiveSectionAndScroll('minetoo')}
+                      onPress={() => { setActiveSection('minetoo'); setSectionChatStarted('minetoo'); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
                       activeOpacity={0.8}
                     >
                       <View style={styles.gridTitleRow}>
