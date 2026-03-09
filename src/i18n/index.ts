@@ -17,7 +17,7 @@ export function getLocale(): Locale {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     const host = window.location?.hostname ?? '';
     const params = new URLSearchParams(window.location?.search ?? '');
-    if (host.includes('1es10') || params.get('lang') === 'es') {
+    if (host.includes('1es10') || host.includes('relacion') || params.get('lang') === 'es') {
       _locale = 'es';
       return _locale;
     }

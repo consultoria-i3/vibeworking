@@ -56,6 +56,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="relacion"
+        options={{
+          title: 'Relacion',
+          tabBarIcon: ({ color }) => <View style={iconWrap}><Text style={{ fontSize: 20 }}>🤝</Text></View>,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: getT().nav.profile,

@@ -8,7 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
-    <title>Vibe Working</title>
+    <title>Relacion.at!</title>
+    <script>if(location.hostname.includes('outpl'))document.title='Outplai';</script>
     <style id="expo-reset">
       html, body {
         height: 100%;
@@ -54,7 +55,8 @@
     <div id="root">
       <div class="load-fallback" aria-hidden="true">
         <div class="spinner"></div>
-        <span>Vibe Working</span>
+        <span id="app-name">Relacion.at!</span>
+        <script>if(location.hostname.includes('outpl'))document.getElementById('app-name').textContent='Outplai';</script>
       </div>
     </div>
   </body>

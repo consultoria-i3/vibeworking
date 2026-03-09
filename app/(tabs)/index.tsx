@@ -145,7 +145,7 @@ export default function HomeScreen() {
   const [questions, setQuestions] = useState<CheckinQuestionData[]>(() => getQuestionsForRotation(3));
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<{ value: number; detailText: string; skipped?: boolean }[]>(
-    () => questions.map(() => ({ value: 3, detailText: '', skipped: false }))
+    () => questions.map(() => ({ value: 0, detailText: '', skipped: false }))
   );
   const [showResult, setShowResult] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -163,7 +163,7 @@ export default function HomeScreen() {
   const [showMeTranscription, setShowMeTranscription] = useState('');
   const [showMeTip, setShowMeTip] = useState('');
   const [showMeError, setShowMeError] = useState('');
-  const [firesideStarted, setFiresideStarted] = useState(false);
+  const [firesideStarted, setFiresideStarted] = useState(true);
   const [startFiresideHovered, setStartFiresideHovered] = useState(false);
   /** After first 3 questions: show subsections + "New fireside?" then start second round. */
   const [showFiresideSummary, setShowFiresideSummary] = useState(false);
@@ -194,7 +194,6 @@ export default function HomeScreen() {
   const setActiveSectionAndScroll = (section: typeof activeSection) => {
     setActiveSection(section);
     setFiresideSectionStarted(false);
-    setFiresideStarted(false);
     setSectionChatStarted(null);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
@@ -215,6 +214,8 @@ export default function HomeScreen() {
   const firesideUnset = (currentAnswer?.value ?? 0) < 1;
   const isLowScore = (currentAnswer?.value ?? 3) < LOW_SCORE_THRESHOLD;
   const isLastQuestion = step === questions.length - 1;
+  const isEvery3rd = (step + 1) % 3 === 0;
+  const showTipsBreak = isLastQuestion || isEvery3rd;
 
   useEffect(() => {
     if (user && questions.length !== 3 && step === 0) {
@@ -285,14 +286,9 @@ export default function HomeScreen() {
 
   const handleNext = () => {
     if (showResult) {
-      if (isLastQuestion) {
-        if (questions.length === 9 && user) {
-          handleSubmit();
-        } else if (firesideRound === 1 || !user) {
-          setShowFiresideSummary(true);
-        } else {
-          handleSubmit();
-        }
+      if (showTipsBreak) {
+        // Stay on result — user must click "Keep scoring" or "Done"
+        return;
       } else {
         setShowResult(false);
         setResultTipHighlight(false);
@@ -481,7 +477,7 @@ export default function HomeScreen() {
   };
 
   const renderCheckinSection = () => {
-    if (!canCheckin || loading) return null;
+    if (!canCheckin) return null;
 
     if (!firesideStarted) {
       return (
@@ -575,9 +571,28 @@ export default function HomeScreen() {
         .map((q, i) => ({ q, a: answers[i] }))
         .filter(({ a }) => a && !a.skipped && (a.value ?? 0) >= 1);
       return (
-        <>
-          <View style={styles.sliderCard}>
-            <Text style={styles.firesideHeadline}>{t.home.firesideQuestion}</Text>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.sliderCard}
+          onPress={() => {
+            if (questions.length < 9) {
+              const pool = getQuestionsForRotation(9);
+              const existingIds = new Set(questions.map((q) => q.id));
+              const nextQ = pool.filter((q) => !existingIds.has(q.id)).slice(0, 3);
+              if (nextQ.length > 0) {
+                setQuestions((prev) => [...prev, ...nextQ]);
+                setAnswers((prev) => [...prev, ...nextQ.map(() => ({ value: 0, detailText: '', skipped: false }))]);
+                setStep(questions.length);
+              }
+            } else {
+              setStep(0);
+              setAnswers(questions.map(() => ({ value: 0, detailText: '', skipped: false })));
+            }
+            setShowResult(false);
+            setShowFiresideSummary(false);
+            setFiresideRound(2);
+          }}
+        >
             <View style={styles.firesideSummarySubsections}>
               {answeredPairs.map(({ q, a }, idx) => {
                 const isGood = a!.value! >= 3;
@@ -604,48 +619,18 @@ export default function HomeScreen() {
                 );
               })}
             </View>
-            <Text style={styles.firesideNewFiresideText}>{t.home.newFireside}</Text>
-            {questions.length < 9 ? (
-              <TouchableOpacity
-                style={[styles.startFiresideButton, startFiresideHovered && styles.startFiresideButtonHover, { marginBottom: 8 }]}
-                onPress={() => {
-                  const pool = getQuestionsForRotation(9);
-                  const existingIds = new Set(questions.map((q) => q.id));
-                  const nextQ = pool.filter((q) => !existingIds.has(q.id)).slice(0, 3);
-                  if (nextQ.length === 0) return;
-                  setQuestions((prev) => [...prev, ...nextQ]);
-                  setAnswers((prev) => [...prev, ...nextQ.map(() => ({ value: 0, detailText: '', skipped: false }))]);
-                  setStep(questions.length);
-                  setShowResult(false);
-                  setShowFiresideSummary(false);
-                  setFiresideRound(2);
-                }}
-                {...(Platform.OS === 'web' ? { onMouseEnter: () => setStartFiresideHovered(true), onMouseLeave: () => setStartFiresideHovered(false) } : {} as any)}
-              >
-                <Text style={[styles.startFiresideButtonText, startFiresideHovered && styles.startFiresideButtonTextHover]}>{t.home.try3More}</Text>
-              </TouchableOpacity>
-            ) : null}
-            {!user ? (
-              <TouchableOpacity
-                style={[styles.saveYourAnswersButton, { marginTop: 12 }]}
-                onPress={() => setShowSignupForm(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.saveYourAnswersButtonText}>{t.home.saveYourAnswers}</Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        </>
+            <Text style={[styles.firesideHeadline, { marginTop: 16, textAlign: 'center', alignSelf: 'center' }]}>{t.home.newFireside}</Text>
+        </TouchableOpacity>
       );
     }
 
     return (
       <>
-        <Text style={styles.firesideHeadline}>{t.home.firesideQuestion}</Text>
-        <View style={styles.sliderCard}>
+        <View style={[styles.sliderCard, { backgroundColor: currentQ ? (CATEGORY_COLORS[currentQ.relationshipCategory] || LIGHT_PURPLE) : LIGHT_PURPLE }]}>
         <Text
           style={[
             styles.relationshipLabel,
+            { color: '#FFFFFF', fontWeight: '700' },
             (currentAnswer?.value ?? 0) >= 1
               ? { color: (currentAnswer!.value >= 3 ? '#22C55E' : '#DC2626') }
               : undefined,
@@ -661,6 +646,7 @@ export default function HomeScreen() {
                 <Text
                   style={[
                     styles.questionText,
+                    { color: '#FFFFFF', fontWeight: '700' },
                     (currentAnswer?.value ?? 0) >= 1 && { color: (currentAnswer!.value >= 3 ? '#22C55E' : '#DC2626') },
                   ]}
                 >
@@ -670,6 +656,7 @@ export default function HomeScreen() {
                   <Text
                     style={[
                       styles.questionExample,
+                      { color: 'rgba(255,255,255,0.9)', fontWeight: '700', fontSize: 11.5 },
                       (currentAnswer?.value ?? 0) >= 1 && { color: (currentAnswer!.value >= 3 ? '#22C55E' : '#DC2626') },
                     ]}
                   >
@@ -690,6 +677,7 @@ export default function HomeScreen() {
                         <Text
                           style={[
                             styles.firesideOptionLabel,
+                            { color: '#FFFFFF', fontWeight: '700' },
                             (currentAnswer?.value ?? 0) === i + 1 && styles.firesideOptionLabelSelected,
                             (currentAnswer?.value ?? 0) === i + 1 && { color: getSliderColor(i + 1) },
                           ]}
@@ -771,10 +759,25 @@ export default function HomeScreen() {
         <View style={styles.checkinButtonRow}>
           {!showResult ? (
             <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-              <Text style={styles.skipButtonText}>{t.checkin.skip}</Text>
+              <Text style={[styles.skipButtonText, { color: '#FFFFFF', fontWeight: '700' }]}>{t.checkin.skip}</Text>
             </TouchableOpacity>
           ) : null}
-          {user ? (
+          {/* Always show Done button when showing result on every 3rd / last question */}
+          {showResult && showTipsBreak ? (
+            <TouchableOpacity
+              style={[styles.doneButton, submitting && styles.buttonDisabled]}
+              onPress={() => {
+                if (user) {
+                  handleSubmit();
+                } else {
+                  setShowFiresideSummary(true);
+                }
+              }}
+              disabled={submitting}
+            >
+              <Text style={styles.doneButtonText}>{submitting ? t.checkin.saving : t.checkin.done}</Text>
+            </TouchableOpacity>
+          ) : user && !showTipsBreak ? (
             <TouchableOpacity
               style={[styles.doneButton, submitting && styles.buttonDisabled]}
               onPress={handleSubmit}
@@ -783,44 +786,66 @@ export default function HomeScreen() {
               <Text style={styles.doneButtonText}>{submitting ? t.checkin.saving : t.checkin.done}</Text>
             </TouchableOpacity>
           ) : null}
-          <TouchableOpacity
-            style={[styles.primaryButton, (submitting || (!showResult && firesideUnset)) && styles.buttonDisabled]}
-            onPress={handleNext}
-            disabled={submitting || (!showResult && firesideUnset)}
-          >
-            <Text style={styles.primaryButtonText}>
-              {submitting
-                ? t.checkin.saving
-                : showResult && isLastQuestion
-                ? (user ? t.checkin.next : t.checkin.done)
-                : showResult
-                ? t.checkin.next
-                : t.checkin.continue}
-            </Text>
-          </TouchableOpacity>
+          {/* Show Continue/Next for non-break questions, hide when no score selected */}
+          {!(showResult && showTipsBreak) && !(!showResult && firesideUnset) ? (
+            <TouchableOpacity
+              style={[styles.primaryButton, submitting && styles.buttonDisabled]}
+              onPress={handleNext}
+              disabled={submitting}
+            >
+              <Text style={[styles.primaryButtonText, { color: '#FFFFFF', fontWeight: '700' }]}>
+                {submitting
+                  ? t.checkin.saving
+                  : showResult
+                  ? t.checkin.next
+                  : t.checkin.continue}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
-        {showResult && isLastQuestion && questions.length === 6 ? (
+        {/* Keep scoring button every 3 questions */}
+        {showResult && showTipsBreak ? (
           <TouchableOpacity
             style={[styles.startFiresideButton, { marginTop: 12 }]}
             onPress={() => {
-              const pool = getQuestionsForRotation(9);
-              const existingIds = new Set(questions.map((q) => q.id));
-              const nextQ = pool.filter((q) => !existingIds.has(q.id)).slice(0, 3);
-              if (nextQ.length === 0) return;
-              setQuestions((prev) => [...prev, ...nextQ]);
-              setAnswers((prev) => [...prev, ...nextQ.map(() => ({ value: 0, detailText: '', skipped: false }))]);
-              setStep(questions.length);
-              setShowResult(false);
-              setFiresideRound(2);
+              if (isLastQuestion) {
+                const pool = getQuestionsForRotation(9);
+                const existingIds = new Set(questions.map((q) => q.id));
+                const nextQ = pool.filter((q) => !existingIds.has(q.id)).slice(0, 3);
+                if (nextQ.length === 0) return;
+                setQuestions((prev) => [...prev, ...nextQ]);
+                setAnswers((prev) => [...prev, ...nextQ.map(() => ({ value: 0, detailText: '', skipped: false }))]);
+                setStep(questions.length);
+                setShowResult(false);
+                setFiresideRound(2);
+              } else {
+                setShowResult(false);
+                setResultTipHighlight(false);
+                setStep((s) => s + 1);
+              }
             }}
           >
             <Text style={styles.startFiresideButtonText}>{t.home.try3More}</Text>
           </TouchableOpacity>
         ) : null}
-        {!user && showResult && isLastQuestion && questions.length === 9 ? (
-          <TouchableOpacity style={styles.saveMyAnswersLinkWrap} onPress={() => setShowSignupForm(true)} activeOpacity={0.7}>
-            <Text style={styles.saveMyAnswersLink}>{t.checkin.saveMyAnswers}</Text>
-          </TouchableOpacity>
+        {/* Show accumulated answers every 3 questions */}
+        {showResult && showTipsBreak ? (
+          <View style={styles.firesideSummaryAnswersList}>
+            {questions
+              .map((q, i) => ({ q, a: answers[i] }))
+              .filter(({ a }) => a && !a.skipped && (a.value ?? 0) >= 1)
+              .map(({ q, a }) => {
+                const isGood = a!.value! >= 3;
+                const answerColor = isGood ? '#22C55E' : '#DC2626';
+                const tip = getLocalizedQuestion(q).advice;
+                return (
+                  <View key={q.id} style={styles.firesideSummaryAnswerCard}>
+                    <Text style={styles.firesideSummaryAnswerQuestion}>{getDisplayQuestion(q)}</Text>
+                    <Text style={[styles.firesideSummaryAnswerLabel, { color: answerColor }]}>💡 {tip}</Text>
+                  </View>
+                );
+              })}
+          </View>
         ) : null}
       </View>
       </>
@@ -966,7 +991,7 @@ export default function HomeScreen() {
         ) : (
           /* Default: Fireside check-in inside the main card */
           renderCheckinSection() ?? (
-            <View style={[styles.sectionCard, { backgroundColor: LIGHT_PURPLE }]}>
+            <View style={[styles.sectionCard, { backgroundColor: LIGHT_PURPLE, minHeight: 207, justifyContent: 'center' }]}>
               <Text style={styles.sectionCardTitle}>{t.home.firesideQuestion}</Text>
               <Text style={styles.sectionCardDesc}>{t.home.firesideDesc}</Text>
             </View>
@@ -981,7 +1006,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 key="fireside-card"
                 style={[styles.gridCard, { backgroundColor: '#ffffff' }]}
-                onPress={() => { setSectionChatStarted(null); setFiresideSectionStarted(false); setFiresideStarted(false); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+                onPress={() => { setSectionChatStarted(null); setFiresideSectionStarted(false); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
                 activeOpacity={0.8}
               >
                 <View style={styles.gridTitleRow}>
@@ -1014,11 +1039,9 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   )}
                   {cat.slug === 'classmates' && sectionChatStarted !== 'minetoo' ? (
-                    <TouchableOpacity
+                    <View
                       key="minetoo"
                       style={[styles.gridCard, { backgroundColor: '#ffffff' }]}
-                      onPress={() => { setActiveSection('minetoo'); setSectionChatStarted('minetoo'); scrollRef.current?.scrollTo({ y: 0, animated: true }); }}
-                      activeOpacity={0.8}
                     >
                       <View style={styles.gridTitleRow}>
                         <View style={styles.gridEmoji}>
@@ -1026,8 +1049,27 @@ export default function HomeScreen() {
                         </View>
                         <Text style={styles.gridTitle}>{MINETOO_SECTION.title}</Text>
                       </View>
-                      <Text style={styles.gridDesc} numberOfLines={2}>{MINETOO_SECTION.desc}</Text>
-                    </TouchableOpacity>
+                      <Text style={styles.contactsSectionTitle}>{MINETOO_STEPS[0].title}</Text>
+                      {MINETOO_STEPS[0].subtitle ? <Text style={styles.contactsSectionSubtitle}>{MINETOO_STEPS[0].subtitle}</Text> : null}
+                      <View style={styles.contactsRangeRow}>
+                        {MINETOO_STEPS[0].options.map((opt, i) => (
+                          <TouchableOpacity
+                            key={i}
+                            style={[styles.contactsRangeChip, contactsFamily === opt.midpoint && styles.contactsRangeChipSelected]}
+                            onPress={() => {
+                              setContactsFamily(opt.midpoint);
+                              setActiveSection('minetoo');
+                              setSectionChatStarted('minetoo');
+                              setMinetooFlowStep(1);
+                              scrollRef.current?.scrollTo({ y: 0, animated: true });
+                            }}
+                            activeOpacity={0.8}
+                          >
+                            <Text style={[styles.contactsRangeChipText, contactsFamily === opt.midpoint && styles.contactsRangeChipTextSelected]}>{opt.displayLabel}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
                   ) : null}
                   {cat.slug === 'classmates' && sectionChatStarted !== 'snapit' ? (
                     <TouchableOpacity
@@ -1228,7 +1270,7 @@ const styles = StyleSheet.create({
   firesideHeadline: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#FF52A0',
+    color: '#000000',
     marginBottom: 0,
   },
   firesideStartCard: {
@@ -1238,6 +1280,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 207,
   },
   startFiresideButton: {
     backgroundColor: 'transparent',

@@ -30,7 +30,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     return (
       <View style={[styles.loading, fullHeight]}>
         <ActivityIndicator size="large" color={colors.accent} />
-        <Text style={styles.loadingText}>Vibe Working</Text>
+        <Text style={styles.loadingText}>{Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname.includes('outpl') ? 'Outplai' : 'Relacion.at!'}</Text>
       </View>
     );
   }

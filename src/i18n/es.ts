@@ -70,9 +70,9 @@ export const es: Translations = {
     signOut: 'Cerrar sesión',
     signIn: 'Iniciar sesión',
     firesideQuestion: '¡Tus relaciones eres tú!',
-    newFireside: 'Vamos a intentar más preguntas.',
+    newFireside: '¡Sigue obteniendo tips para tu outplai!',
     saveYourAnswers: 'Guarda tus tips',
-    try3More: 'Intentemos 3 más',
+    try3More: 'Sigue calificando tu outplai.',
     noScoreSelected: '😊 Sin puntaje',
     slideToSelect: 'Desliza de 1 a 4, luego toca Continuar.',
     backToSelect: 'Volver a seleccionar',
@@ -89,7 +89,7 @@ export const es: Translations = {
     chatReplyDefault: 'Estoy aquí para ayudarte. (Más próximamente.)',
     // Fireside section
     firesideTitle: '1 es 10',
-    firesideDesc: 'Enfocémonos en la capacidad de caer bien.',
+    firesideDesc: 'Enfócate en caer bien.',
     // Minetoo section
     minetooTitle: '1 es 10!',
     minetooDesc: 'Tus contactos, mis contactos. Con cada contacto extiendes 10 contactos tu alcance.',
@@ -129,7 +129,7 @@ export const es: Translations = {
       boss: { title: 'Jefe', desc: 'Demuestra que eres alguien que construye. ¿Cómo te ahorro tiempo? Llega antes, vete al último.' },
       teammates: { title: 'Compañeros', desc: 'Por favor y gracias. Haz lo que dices. Termina lo que empiezas. Pide consejo seguido.' },
       classmates: { title: 'Conocidos', desc: '¡La máquina de favores casuales!' },
-      fireside: { title: '1 es 10', desc: 'Enfocémonos en la capacidad de caer bien.' },
+      fireside: { title: '1 es 10', desc: 'Enfócate en caer bien.' },
     },
   },
 

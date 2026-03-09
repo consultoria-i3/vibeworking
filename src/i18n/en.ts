@@ -72,9 +72,9 @@ export const en = {
     signOut: 'Sign out',
     signIn: 'Sign in',
     firesideQuestion: 'Your Outplai',
-    newFireside: "Let's try more questions.",
+    newFireside: 'Continue getting tips to outplai!',
     saveYourAnswers: 'Save your tips',
-    try3More: "Let's try 3 more",
+    try3More: 'Keep scoring your outplai.',
     noScoreSelected: '😊 No score selected',
     slideToSelect: 'Slide to pick 1–4, then tap Continue.',
     backToSelect: 'Back to select',
@@ -91,7 +91,7 @@ export const en = {
     chatReplyDefault: "I'm here to help. (More coming soon.)",
     // Fireside section
     firesideTitle: 'Your Outplai',
-    firesideDesc: "Let's focus on likeability.",
+    firesideDesc: 'Focus on likeability.',
     // Minetoo section
     minetooTitle: '1 is 10!',
     minetooDesc: 'Your contacts, my contacts. For each contact you extend your reach 10 times.',
@@ -131,7 +131,7 @@ export const en = {
       boss: { title: 'Boss', desc: 'Show you are a builder. How can I save you time? Get there earlier, leave last.' },
       teammates: { title: 'Teammates', desc: 'Please & Thank you. Do what you say. Finish what you start. Ask for advice often.' },
       classmates: { title: 'Classmates', desc: 'Casual favors machine!' },
-      fireside: { title: 'Your Outplai', desc: "Let's focus on likeability." },
+      fireside: { title: 'Your Outplai', desc: 'Focus on likeability.' },
     },
   },
 
